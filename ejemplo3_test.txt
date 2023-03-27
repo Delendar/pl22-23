@@ -1,0 +1,34 @@
+FLEX(1)                          User Commands                         FLEX(1)
+
+
+
+NAME
+       flex - the fast lexical analyser generator
+
+SYNOPSIS
+       flex [OPTIONS] [FILE]...
+
+DESCRIPTION
+       Generates programs that perform pattern-matching on text.
+
+   Table Compression:
+       -Ca, --align
+              trade off larger tables for better memory alignment
+
+       -Ce, --ecs
+              construct equivalence classes
+
+       -Cf    do not compress tables; use -f representation
+
+       -CF    do not compress tables; use -F representation
+
+       -Cm, --meta-ecs
+              construct meta-equivalence classes
+
+       -Cr, --read
+              use read() instead of stdio for scanner input
+
+       -f, --full
+              generate fast, large scanner. Same as -Cfr
+
+       -F, --fast

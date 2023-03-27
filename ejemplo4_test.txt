@@ -1,0 +1,8 @@
+/* comentarios en una linea */
+/* comentarios sobre multiples
+       lineas */
+comentarios /*incluidos dentro de una */linea
+comentarios /**/ raros
+/*/Acepta comentarios que no lo son?   
+/**_/*/ Es correcto, lo acepta?
+
