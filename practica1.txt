@@ -12,4 +12,28 @@ son:
     .6 Frases (delimitados por ".")
 2. Los tipos de caracteres que no se deben de contabilizar (" ", /t, /n).
 
-Teniendo en cuenta lo anterior, la idea para 
+Teniendo en cuenta lo anterior, la idea para contabilizar correctamente será la siguiente:
+1. Reconocemos un grupo de espacios, tabulaciones y caracteres de nueva línea como secuencias
+propias para así no contabilizarlos.
+2. Reconocemos un grupo de palabras en mayúscula como una secuencia de caracteres 
+alfabéticos siendo todos mayúsculas en su totalidad.
+3. Reconocemos un grupo de palabras en minúscula como una secuencia de caracteres
+alfabéticos siendo todos minúsculas en su totalidad.
+4. Reconocemos un grupo de "números" como una secuencia de digitos en su totalidad.
+5. Reconocemos un grupo de palabras como una secuencia de caracteres que no estan en ninguno
+de los 3 grupos anteriores (2, 3, 4).
+6. Reconocemos como una frase cuando se encuentra 1 o más ".".
+
+Para la contabilización de caracteres se sumará al contador el número de caracteres del
+buffer léxico en cuando se reconozca uno de los grupos 2, 3, 4 o 5.
+
+Manual de usuario:
+Compilación FLEX > EXECUTABLE:
+"make all"
+Ejecución de todos los test disponibles:
+"make test"
+Ejecución de tests por separado (existen 3 archivos de test, test1, test2, test3).
+Llamar al archivo que quiere ser probado en cuestión:
+"make test1"
+"make test2"
+"make test3"
