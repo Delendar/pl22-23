@@ -20,12 +20,12 @@ number      {digit}+
 
 %%
 
-{blanks}      { printf("---\n");}
-{endOfPhrase} { printf("%s \n", yytext); phraseCounter += 1; wordCounter += 1; charCounter += yyleng;}
-{upperWord}   { printf("%s ", yytext); upperWordCounter += 1; wordCounter += 1; charCounter += yyleng; printf("UW\n");}
-{lowerWord}   { printf("%s ", yytext); lowerWordCounter += 1; wordCounter += 1; charCounter += yyleng; printf("LW\n");}
-{number}      { printf("%s ", yytext); numberCounter += 1; wordCounter += 1; charCounter += yyleng; printf("NN\n");}
-{word}        { printf("%s ", yytext); wordCounter += 1; charCounter += yyleng; printf("W\n");}
+{blanks}      { }
+{endOfPhrase} { phraseCounter += 1; charCounter += yyleng; }
+{upperWord}   { upperWordCounter += 1; wordCounter += 1; charCounter += yyleng; }
+{lowerWord}   { lowerWordCounter += 1; wordCounter += 1; charCounter += yyleng; }
+{number}      { numberCounter += 1; wordCounter += 1; charCounter += yyleng; }
+{word}        { wordCounter += 1; charCounter += yyleng; }
 
 %%
 
