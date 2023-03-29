@@ -1,14 +1,18 @@
 %option noyywrap
 %{
+#include <stdbool.h>
 int charCounter = 0;
 int wordCounter = 0;
 int upperWordCounter = 0;
 int lowerWordCounter = 0;
 int numberCounter = 0;
 int phraseCounter = 0;
+bool isPhrase = false;
 %}
 char        [^ \t]
-blanks      [ \t\n]*
+blanks      [ \t]*
+eol         [\n]*
+uselessDot  ^[.]+
 endOfPhrase [.]+
 digit       [0-9]
 lowerLetter [a-z]
@@ -21,11 +25,13 @@ number      {digit}+
 %%
 
 {blanks}      { }
-{endOfPhrase} { phraseCounter += 1; charCounter += yyleng; }
-{upperWord}   { upperWordCounter += 1; wordCounter += 1; charCounter += yyleng; }
-{lowerWord}   { lowerWordCounter += 1; wordCounter += 1; charCounter += yyleng; }
-{number}      { numberCounter += 1; wordCounter += 1; charCounter += yyleng; }
-{word}        { wordCounter += 1; charCounter += yyleng; }
+{uselessDot}  { charCounter += yyleng; }
+{endOfPhrase} { if (isPhrase) { phraseCounter += 1; charCounter += yyleng; isPhrase = false; } }
+{upperWord}   { upperWordCounter += 1; wordCounter += 1; charCounter += yyleng; isPhrase = true; }
+{lowerWord}   { lowerWordCounter += 1; wordCounter += 1; charCounter += yyleng; isPhrase = true; }
+{number}      { numberCounter += 1; wordCounter += 1; charCounter += yyleng; isPhrase = true; }
+{word}        { wordCounter += 1; charCounter += yyleng; isPhrase = true; }
+{eol}         { isPhrase = false; }
 
 %%
 
