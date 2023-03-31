@@ -38,12 +38,14 @@ Consideraciones:
 puntos que cumplan con el anterior requisito forman varias frases. 
 
 Manual de usuario:
-Compilación FLEX > EXECUTABLE:
+Compilación y ejecución de tests:
 "make all"
+Compilación FLEX > EXECUTABLE:
+"make compile"
 Ejecución de todos los test disponibles:
 "make test"
 Ejecución de tests por separado (existen 3 archivos de test, test1, test2, test3).
 Llamar al archivo que quiere ser probado en cuestión:
 "make test1"  -- Test para el reconocimiento de las diversas categorías de palabras
 "make test2"  -- Test para el reocnocimiento de frases
-"make test3"  -- 
+"make test3"  -- Pasa este archivo por el analizador
