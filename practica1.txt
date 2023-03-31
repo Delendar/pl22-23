@@ -15,17 +15,27 @@ son:
 Teniendo en cuenta lo anterior, la idea para contabilizar correctamente será la siguiente:
 1. Reconocemos un grupo de espacios, tabulaciones y caracteres de nueva línea como secuencias
 propias para así no contabilizarlos.
-2. Reconocemos un grupo de palabras en mayúscula como una secuencia de caracteres 
-alfabéticos siendo todos mayúsculas en su totalidad.
-3. Reconocemos un grupo de palabras en minúscula como una secuencia de caracteres
-alfabéticos siendo todos minúsculas en su totalidad.
-4. Reconocemos un grupo de "números" como una secuencia de digitos en su totalidad.
-5. Reconocemos un grupo de palabras como una secuencia de caracteres que no estan en ninguno
+2. Reconocemos como palabra en mayúscula una secuencia de caracteres 
+alfabéticos siendo todos letras mayúsculas.
+3. Reconocemos como palabra en minúscula una secuencia de caracteres
+alfabéticos siendo todos letras minúsculas.
+4. Reconocemos como "número" una secuencia de digitos en su totalidad.
+5. Reconocemos como palabra genérica una secuencia de caracteres que no estan en ninguno
 de los 3 grupos anteriores (2, 3, 4).
 6. Reconocemos como una frase cuando se encuentra 1 o más ".".
 
 Para la contabilización de caracteres se sumará al contador el número de caracteres del
 buffer léxico en cuando se reconozca uno de los grupos 2, 3, 4 o 5.
+
+Consideraciones:
+
+1. Las palabras que no sean mayúsculas, minúsculas y/o numéricas cuentan sólo como palabra genérica.
+2. Las palabras mayúsculas, minúsculas y/o numéricas cuentan como su contador correspondiente y como palabra genérica.
+3. El reconocimiento de palabras con tildes implica una palabra genérica.
+4. Un "." o secuencia de "." no es una palabra sino caracteres.
+5. Un caracter especial que NO sea "." entonces si es palabra.
+6. Un "." precedido de 1 o más palabras en la misma línea cuenta como frase, de forma repetitiva, es decir, múltiples 
+puntos que cumplan con el anterior requisito forman varias frases. 
 
 Manual de usuario:
 Compilación FLEX > EXECUTABLE:
@@ -34,6 +44,6 @@ Ejecución de todos los test disponibles:
 "make test"
 Ejecución de tests por separado (existen 3 archivos de test, test1, test2, test3).
 Llamar al archivo que quiere ser probado en cuestión:
-"make test1"
-"make test2"
-"make test3"
+"make test1"  -- Test para el reconocimiento de las diversas categorías de palabras
+"make test2"  -- Test para el reocnocimiento de frases
+"make test3"  -- 

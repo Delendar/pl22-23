@@ -9,6 +9,7 @@ int numberCounter = 0;
 int phraseCounter = 0;
 bool isPhrase = false;
 %}
+
 char        [^ \t]
 blanks      [ \t]*
 eol         [\n]*

@@ -1,9 +1,8 @@
-Contadordecaracteres.com es un contador automático de caracteres y palabras en un texto. Solo colocque el cursor dentro de la caja de textos y comienze a escribir y el contador de caracteres comenzara a contar sus palabras y caracteres a medida de que usted vaya escribiendo.
-
-También puede copiar y pegar bloques de texto de un documento que tengas ya escrito. Solo pegue el texto dentro de la caja del contador y rápidamente se mostrara la cantidad de caracteres y palabras que contenga el texto pegado.
-
-Esta herramienta es útil para sus tweets en Twitter, y también para una multitud de otras aplicaciones. El límite de caracteres en twitter es de 140. Un mensaje de texto a tu celular el límite es 160. Anuncios de google son 25 caracteres para el título, 70 para el cuerpo del anuncio y 35 para la url que se muestra.
-
-El contador también es de gran ayuda a reporteros, para tareas escolares, escritores freelance, preparación de resume. También es muy útil para marketing, promociones, diseño web, creación de flyers, la escritura de tu tesis, ETC...
-
-Dejále saber a tus amistades sobre esta fabulosa herramienta para que otros se puedan beneficiar.
+Una frase cualquiera.
+Dos frases .en una linea.
+La siguiente una linea sin frase
+. ... . .. . ... . . . .. . .. . ... ..
+aslkfjhals190213a's].
+las...FRASES.
+las . FRASES.
+las ... FRASES.

@@ -11,5 +11,3 @@ son:
     .5 Números
     .6 Frases (delimitados por ".")
 2. Los tipos de caracteres que no se deben de contabilizar (" ", /t, /n).
-
-Teniendo en cuenta lo anterior, la idea para 
