@@ -1,34 +1,39 @@
 %{
 #include <stdlib.h>
+#include <stdbool.h>
 #include "practica2.tab.h"
+
+bool is_content = true;
 %}
 
-proper_tag_name [a-zA-Z][a-zA-Z0-9]+
-number_start_word [0-9][a-zA-Z0-9]+
-version_num \"[0-9]+"."[0-9]+\"
-version_decl version
-encoding_decl encoding
-encoding_id \"[a-zA-Z0-9\-]+\"
 lt "<"
 gt ">"
 slash "/"
 quest "?"
 eq "="
+ws [ \t]+
+double [0-9]+"."[0-9]+
+
+encoding_id     [a-zA-Z0-9\-]+
+version_info    "version"{eq}"\""{double}"\""
+encoding_info   "encoding"{eq}"\""{encoding_id}"\""
+xmlheader_start {lt}{quest}"xml"
+xmlheader_close {quest}{gt}
+
+comment         "<!--".*"-->"
+open_tag        {lt}[a-zA-Z][a-zA-Z0-9]+{gt}
+close_tag       {lt}{slash}[a-zA-Z][a-zA-Z0-9]+{gt}
 
 %%
 
-{version_decl}  { return VERSION_DECL; }
-{encoding_decl} { return ENCODING_DECL; }
-{proper_tag_name}   { return TAG_NAME; }
-{number_start_word} { return NUM_START_WORD; }
-{version_num}   { return VERSION_NUM; }
-{encoding_id}   { return ENCODING_ID; }
+{xmlheader_start} { printf("HEADER_START "); return HEADER_START; }
+{xmlheader_close} { printf("HEADER_CLOSE "); return HEADER_CLOSE; }
+{version_info}    { printf("V_INFO "); return VERSION_INFO; }
+{encoding_info}   { printf("E_INFO "); return ENCODING_INFO; } 
+{comment}   { printf("COMMENT "); return COMMENT; }
+{open_tag}  { printf("OPEN_TAG "); return OPEN_TAG; }
+{close_tag}  { printf("CLOSE_TAG "); return CLOSE_TAG; }
+{gt}        { printf("GT "); return GT; }
+{lt}        { printf("LT "); return LT; }
 
-{gt}        { return GT; }
-{lt}        { return LT; }
-{slash}     { return SLASH; }
-{quest}     { return QUEST; }
-{eq}        { return EQ; }
-
-<<EOF>>     { return EOF; }
 %%

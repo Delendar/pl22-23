@@ -3,12 +3,7 @@
     #include <stdlib.h>
     #include <string.h>
 
-    void yyerror (char**, int*, char const *);
-    void add_tag (char**, int*, const char*);
-    void remove_tag(char**, int*);
-    char* get_last_tag(char**, int*);
-    int compare_closing_tag(char** , int*, const char*);
-    void free_stored_tags (char**, int*);
+    void yyerror (int*, char const *);
 
 %}
 %union {
@@ -17,116 +12,122 @@
     char type_char;
 }
 
-%parse-param {char** stored_tag_names} {int* stored_tags_size}
-%token TEXT COMMENT
-%token <type_string> NAME VERSION_DECL ENCODING_DECL ENCODING_ID TAG_NAME NUM_START_WORD
-%token <type_real> VERSION_NUM
-%token <type_char> GT LT SLASH QUEST EQ
-%token end_of_file
-%type <type_string> start_tag
-%type <type_string> end_tag
+%token <type_string> TEXT END_OF_FILE
+%token <type_string> HEADER_START HEADER_CLOSE VERSION_INFO ENCODING_INFO
+%token <type_string> OPEN_TAG CLOSE_TAG
+%token <type_string> COMMENT
+%token <type_char> GT LT
 %start xml_file
+%parse-param {int* size}
 
 %%
 
-xml_file: xml_header element end_of_file
-|         element end_of_file 
-        { yyerror(stored_tag_names, stored_tags_size, "Falta la cabecera XML."); 
-        return 1; 
-        }
+xml_file: xml_header element
+|         element {  }//ERROR NO HAY XML HEADER
+|         '(' error ')' 
 ;
 
-xml_header: LT QUEST NAME version_info QUEST GT
-|           LT QUEST NAME version_info encoding_info QUEST GT
+xml_header: HEADER_START VERSION_INFO HEADER_CLOSE 
+|           HEADER_START VERSION_INFO ENCODING_INFO HEADER_CLOSE
+|           LT GT //ERROR NO HAY XML HEADER
+|           '(' error ')' //ERROR XML HEADER MAL CONSTRUIDO
 ;
-
-version_info: VERSION_DECL EQ VERSION_NUM 
-
-encoding_info: ENCODING_DECL EQ ENCODING_ID
 
 element: start_tag content end_tag
+|        COMMENT element
+;
 
-start_tag: LT TAG_NAME GT 
-                { add_tag(stored_tag_names, stored_tags_size, $2); }
-|          LT NUM_START_WORD GT 
-                { yyerror(stored_tag_names, stored_tags_size, "Los identificadores de etiquetas deben empezar por una letra.");
-                return 1; }
-|          LT GT 
-                { yyerror(stored_tag_names, stored_tags_size, "No se encontró el identificador de la etiqueta."); 
-                return 1; }
+start_tag: OPEN_TAG 
+|          LT GT //ERROR NO HAY IDENTIFICADOR DE ETIQUETA
+|          '(' error ')' //ERROR IDENTIFICADOR DE ETIQUETA MAL CONSTRUIDO
+;
 
-end_tag: LT SLASH NAME GT  {
-        $$ = $3;
-        char* end_tag_name;
-        strcpy(end_tag_name, $$);
-        if  (compare_closing_tag(stored_tag_names, stored_tags_size, end_tag_name) == 0) {
-            remove_tag(stored_tag_names, stored_tags_size);
-        }
-        else {
-            char* start_tag_name;
-            strcpy(start_tag_name, get_last_tag(stored_tag_names, stored_tags_size));
-            char result[100];
-
-            strcpy(result, "Encontrado </");
-            strcat(result, end_tag_name);
-            strcat(result, " y se esperaba </");
-            strcat(result, start_tag_name);
-            strcat(result, ">.");
-            yyerror(stored_tag_names, stored_tags_size, result);
-            return 1;
-        };
-    };
+end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON
+                           // LA QUE ESTA ABIERTA ACTUALMENTE
+|        LT '/' GT  //ERROR FALTA IDENTIFIADOR
+|        LT GT //ERROR FALTA CIERRE Y IDENTIFICADOR
+|        OPEN_TAG //ERROR NO ES CIERRE DE TAG
+|        '(' error ')' 
+;
 
 content:    TEXT 
-|           COMMENT
-|           element
+|           element content
+|           /* vacio */ 
 ;
 
 %%
+/* Cosas que no se tienen en cuenta: 
+ - Comentarios mal construidos (2 o más guiones consecutivos dentro de un comentario
+ sin ser estos los de finalización de comentario). */
 
-void add_tag(char** tag_names, int* tag_names_size, const char* new_tag_name) {
-    char* tag_names_update = realloc(tag_names, (*tag_names_size + 1) *sizeof(char*));
-    tag_names_update[*tag_names_size] = malloc(strlen(new_tag_name)+1);
-    strcpy(tag_names_update[*tag_names_size], new_tag_name);
-    *tag_names_size += 1;
-}
+void remove_xml_notation(char* xml_tag_notation) {
+    int pos = 0;
 
-void remove_tag(char** tag_names, int* tag_names_size) {
-    char* tag_names_update = realloc(tag_names, (*tag_names_size - 1) *sizeof(char*));
-    free(tag_names[*tag_names_size]);
-    *tag_names_size -= 1;
-}
-
-char* get_last_tag(char** tag_names, int* tag_names_size) {
-    return tag_names[*tag_names_size -1];
-}
-
-int compare_closing_tag(char** tag_names, int* tag_names_size, const char* tag_to_compare) {
-    return strcmp(get_last_tag(tag_names, tag_names_size), tag_to_compare);
-}
-
-void free_stored_tags (char** tag_names, int* tag_names_size) {
-    for(int i=0; i < *tag_names_size; i++){
-        free(tag_names[i]);
+    while (xml_tag_notation[pos] != '\0') 
+    {
+        if (xml_tag_notation[pos] == '<' ||
+            xml_tag_notation[pos] == '>' ||
+            xml_tag_notation[pos] == '/') 
+        {
+            
+            int newpos = pos;
+            while (xml_tag_notation[newpos] != '\0') {
+                xml_tag_notation[newpos] = xml_tag_notation[newpos+1];
+                newpos++;
+            }
+        } 
+        else pos++;
     }
-    free(tag_names);
-    free(tag_names_size);
+}
+
+void add_tag(char** stored_tags, int* tags_stored, const char* new_tag) {
+    char* stored_tags_update = realloc(stored_tags, (*tags_stored + 1) *sizeof(char*));
+    stored_tags_update[*tags_stored] = malloc(strlen(new_tag)+1);
+    strcpy(stored_tags_update[*tags_stored], new_tag);
+    *tags_stored += 1;
+}
+
+void remove_tag(char** stored_tags, int* tags_stored) {
+    char* stored_tags_update = realloc(stored_tags, (*tags_stored - 1) *sizeof(char*));
+    free(stored_tags[*tags_stored]);
+    *tags_stored -= 1;
+}
+
+char* get_last_tag(char** stored_tags, int* tags_stored) {
+    return stored_tags[*tags_stored -1];
+}
+
+int compare_closing_tag(char** stored_tags, int* tags_stored, const char* tag_to_compare) {
+    return strcmp(get_last_tag(stored_tags, tags_stored), tag_to_compare);
+}
+
+void free_stored_tags (char** stored_tags, int* tags_stored) {
+    for(int i=0; i < *tags_stored; i++){
+        free(stored_tags[i]);
+    }
+    free(stored_tags);
+    free(tags_stored);
+}
+
+void test_tag(char** stored_tags, int* tags_stored) {
+    add_tag(stored_tags, tags_stored, "tag1");
+    //printf("%d \n",*tags_stored);
 }
 
 int main() {
-    char ** stored_tag_names;
-    int * stored_tags_size;
-    *stored_tags_size = 0;
-    int result = yyparse(stored_tag_names, stored_tags_size);
-    if (result == 0) {
-        printf ("Sintaxis XML correcta.\n");
-    }
-    free_stored_tags(stored_tag_names, stored_tags_size);
+    char** stored_tags;
+    printf("RIP");
+    int* tags_stored = malloc(sizeof(int));
+    *tags_stored = 0; 
+    test_tag(stored_tags, tags_stored);
+    printf("%s\n", get_last_tag(stored_tags, tags_stored));
+    yyparse(tags_stored);
+    free_stored_tags(stored_tags, tags_stored);
+    //printf ("Sintaxis XML correcta.\n");
     return 0;
 }
 
-void yyerror (char** stored_tag_names, int* stored_tags_size, char const *message) { 
-    printf("Sintaxis XML incorrecta. ");
-    fprintf (stderr, "%s\n", message);
-    free_stored_tags(stored_tag_names, stored_tags_size); 
+void yyerror (int* size, char const *message) { 
+    printf("\nSintaxis XML incorrecta. %d . %s\n", *size, message);
+    //fprintf (stderr, "%s\n", message);
 }
