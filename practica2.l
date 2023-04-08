@@ -31,8 +31,8 @@ close_tag       {lt}{slash}[a-zA-Z][a-zA-Z0-9]+{gt}
 {version_info}    { printf("V_INFO "); return VERSION_INFO; }
 {encoding_info}   { printf("E_INFO "); return ENCODING_INFO; } 
 {comment}   { printf("COMMENT "); return COMMENT; }
-{open_tag}  { printf("OPEN_TAG "); return OPEN_TAG; }
-{close_tag}  { printf("CLOSE_TAG "); return CLOSE_TAG; }
+{open_tag}  { printf("OPEN_TAG "); yylval.current_tag=yytext; return OPEN_TAG; }
+{close_tag}  { printf("CLOSE_TAG "); yylval.current_tag=yytext; return CLOSE_TAG; }
 {gt}        { printf("GT "); return GT; }
 {lt}        { printf("LT "); return LT; }
 

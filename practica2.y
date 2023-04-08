@@ -3,27 +3,34 @@
     #include <stdlib.h>
     #include <string.h>
     #define BASE_STORED_TAGS_SIZE 10
-    void yyerror (int*, char const *);
+    #define MAX_TAG_NAME_LENGTH 20
 
+    void yyerror (char**, int*, char const *);
+    void add_tag(char**, int*, const char*);
+    void remove_tag(char**, int*);
+    char* get_last_tag(char**, int*);
+    int compare_closing_tag(char**, int*, const char*);
+    void remove_xml_notation(char*);
 %}
 %union {
     float type_real;
-    char * type_string;
-    char type_char;
+    char* type_string;
+    char* current_tag;
 }
 
-%token <type_string> TEXT END_OF_FILE
+%token <type_string> TEXT
 %token <type_string> HEADER_START HEADER_CLOSE VERSION_INFO ENCODING_INFO
 %token <type_string> OPEN_TAG CLOSE_TAG
 %token <type_string> COMMENT
-%token <type_char> GT LT
+%token <type_string> GT LT
+%type <type_string> start_tag
 %start xml_file
-%parse-param {int* size}
+%parse-param {char** stored_tags} {int* tags_stored}
 
 %%
 
 xml_file: xml_header element
-|         element {  }//ERROR NO HAY XML HEADER
+|         element //ERROR NO HAY XML HEADER
 |         '(' error ')' 
 ;
 
@@ -38,13 +45,34 @@ element: start_tag content end_tag
 ;
 
 start_tag: OPEN_TAG 
-                    {  }
+                    { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char)); 
+                      strcpy(tag_name, yyval.current_tag);
+                      remove_xml_notation(tag_name);
+                      add_tag(stored_tags, tags_stored, tag_name); 
+                      free(tag_name);}
 |          LT GT //ERROR NO HAY IDENTIFICADOR DE ETIQUETA
 |          '(' error ')' //ERROR IDENTIFICADOR DE ETIQUETA MAL CONSTRUIDO
 ;
 
-end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON
-                           // LA QUE ESTA ABIERTA ACTUALMENTE
+end_tag: CLOSE_TAG { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char));
+                     strcpy(tag_name, yyval.current_tag);
+                     remove_xml_notation(tag_name);
+                     printf("PreCOmpare\n");
+                     if (compare_closing_tag(stored_tags, tags_stored, tag_name) == 1){
+                        printf("PostCOmpare\n");
+                        char* error_msg = malloc(300 * sizeof(char));
+                        printf("PostMalloc\n");
+                        strcpy(error_msg, "Sintaxis incorrecta. Se esperaba </");
+                        strcat(error_msg, get_last_tag(stored_tags,tags_stored));
+                        strcat(error_msg, "> y se encontro </");
+                        strcat(error_msg, tag_name);
+                        strcat(error_msg, ">");
+                        yyerror(stored_tags, tags_stored, error_msg);
+                        free(error_msg);
+                     }
+                     free(tag_name);}
+                    //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON
+                    // LA QUE ESTA ABIERTA ACTUALMENTE
 |        LT '/' GT  //ERROR FALTA IDENTIFIADOR
 |        LT GT //ERROR FALTA CIERRE Y IDENTIFICADOR
 |        OPEN_TAG //ERROR NO ES CIERRE DE TAG
@@ -106,10 +134,13 @@ int compare_closing_tag(char** stored_tags, int* tags_stored, const char* tag_to
 }
 
 void free_stored_tags (char** stored_tags, int* tags_stored) {
+    printf("PreLoop\n");
     for(int i=0; i < *tags_stored; i++){
         free(stored_tags[i]);
     }
+    printf("POSTLoop\n");
     free(stored_tags);
+    printf("POSTListp\n");
     free(tags_stored);
 }
 
@@ -132,14 +163,14 @@ int main() {
     char** stored_tags = malloc(BASE_STORED_TAGS_SIZE * sizeof(char*));
     int* tags_stored = malloc(sizeof(int));
     *tags_stored = 0; 
-    test_tag(stored_tags, tags_stored);
-    yyparse(tags_stored);
+    //test_tag(stored_tags, tags_stored);
+    yyparse(stored_tags, tags_stored);
     free_stored_tags(stored_tags, tags_stored);
     //printf ("Sintaxis XML correcta.\n");
     return 0;
 }
 
-void yyerror (int* size, char const *message) { 
-    printf("\nSintaxis XML incorrecta. %d . %s\n", *size, message);
+void yyerror (char** stored_tags, int* tags_stored, char const *message) { 
+    printf("\nSintaxis XML incorrecta. %d . %s\n", *tags_stored, message);
     //fprintf (stderr, "%s\n", message);
 }
