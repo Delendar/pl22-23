@@ -2,15 +2,16 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #define BASE_STORED_TAGS_SIZE 10
+    #define BASE_STORED_TAGS_SIZE 100
     #define MAX_TAG_NAME_LENGTH 20
 
     void yyerror (char**, int*, char const *);
     void add_tag(char**, int*, const char*);
-    void remove_tag(char**, int*);
+    void remove_tag(char***, int*);
     char* get_last_tag(char**, int*);
     int compare_closing_tag(char**, int*, const char*);
     void remove_xml_notation(char*);
+    void printStrings(char**, int);
 %}
 %union {
     float type_real;
@@ -57,11 +58,9 @@ start_tag: OPEN_TAG
 end_tag: CLOSE_TAG { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char));
                      strcpy(tag_name, yyval.current_tag);
                      remove_xml_notation(tag_name);
-                     printf("PreCOmpare\n");
-                     if (compare_closing_tag(stored_tags, tags_stored, tag_name) == 1){
-                        printf("PostCOmpare\n");
+                     if (compare_closing_tag(stored_tags, tags_stored, tag_name) != 0){
                         char* error_msg = malloc(300 * sizeof(char));
-                        printf("PostMalloc\n");
+                        printStrings(stored_tags, *tags_stored);
                         strcpy(error_msg, "Sintaxis incorrecta. Se esperaba </");
                         strcat(error_msg, get_last_tag(stored_tags,tags_stored));
                         strcat(error_msg, "> y se encontro </");
@@ -70,6 +69,9 @@ end_tag: CLOSE_TAG { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(
                         yyerror(stored_tags, tags_stored, error_msg);
                         free(error_msg);
                      }
+                     printStrings(stored_tags, *tags_stored);
+                     remove_tag(&stored_tags, tags_stored);
+                     printStrings(stored_tags, *tags_stored);
                      free(tag_name);}
                     //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON
                     // LA QUE ESTA ABIERTA ACTUALMENTE
@@ -115,13 +117,17 @@ void add_tag(char** stored_tags, int* tags_stored, const char* new_tag) {
     } 
     stored_tags[*tags_stored] = malloc(strlen(new_tag)+1);
     strcpy(stored_tags[*tags_stored], new_tag);
+    printStrings(stored_tags, *tags_stored);
     *tags_stored += 1;
 }
 
-void remove_tag(char** stored_tags, int* tags_stored) {
-    char* stored_tags_update = realloc(stored_tags, (*tags_stored - 1) *sizeof(char*));
-    free(stored_tags[*tags_stored]);
-    *tags_stored -= 1;
+void remove_tag(char*** stored_tags, int* tags_stored) {
+    if (*tags_stored > 0) {
+        (*tags_stored)--;
+        free((*stored_tags)[*tags_stored]);
+        (*stored_tags)[*tags_stored] = NULL;
+        *stored_tags = realloc(*stored_tags, (*tags_stored) * sizeof(char *));
+    }
 }
 
 char* get_last_tag(char** stored_tags, int* tags_stored) {
@@ -130,33 +136,22 @@ char* get_last_tag(char** stored_tags, int* tags_stored) {
 
 // Devuelve 0 si la etiqueta cierra correctamente la etiqueta abierta actualmente
 int compare_closing_tag(char** stored_tags, int* tags_stored, const char* tag_to_compare) {
-    return strcmp(get_last_tag(stored_tags, tags_stored), tag_to_compare);
+    int closes = strcmp(get_last_tag(stored_tags, tags_stored), tag_to_compare);
+    return closes;
+}
+
+void printStrings(char **stringArray, int numStrings) {
+    for (int i = 0; i < numStrings; i++) {
+        printf(" %s : ", stringArray[i]);
+    }
 }
 
 void free_stored_tags (char** stored_tags, int* tags_stored) {
-    printf("PreLoop\n");
     for(int i=0; i < *tags_stored; i++){
         free(stored_tags[i]);
     }
-    printf("POSTLoop\n");
     free(stored_tags);
-    printf("POSTListp\n");
     free(tags_stored);
-}
-
-void test_tag(char** stored_tags, int* tags_stored) {
-    add_tag(stored_tags, tags_stored, "tag1");
-    printf("%d \n",*tags_stored);
-    printf("%s \n", get_last_tag(stored_tags, tags_stored));
-    printf("IS SAME %d \n", compare_closing_tag(stored_tags, tags_stored, "tag1"));
-    add_tag(stored_tags, tags_stored, "tag2");
-    printf("%d \n",*tags_stored);
-    printf("%s \n", get_last_tag(stored_tags, tags_stored));
-    printf("IS SAME %d \n", compare_closing_tag(stored_tags, tags_stored, "tag1"));
-    remove_tag(stored_tags, tags_stored);
-    printf("%d \n",*tags_stored);
-    printf("%s \n", get_last_tag(stored_tags, tags_stored));
-    printf("IS SAME %d \n", compare_closing_tag(stored_tags, tags_stored, "tag1"));
 }
 
 int main() {
@@ -165,6 +160,7 @@ int main() {
     *tags_stored = 0; 
     //test_tag(stored_tags, tags_stored);
     yyparse(stored_tags, tags_stored);
+    printf("OUT\n");
     free_stored_tags(stored_tags, tags_stored);
     //printf ("Sintaxis XML correcta.\n");
     return 0;
