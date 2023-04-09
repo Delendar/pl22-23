@@ -33,20 +33,24 @@
 xml_file: xml_header element
 |         element //ERROR NO HAY XML HEADER
                 { char error_msg[] = "Sintaxis XML incorrecta, no se encontró la cabecera XML.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 |         '(' error ')' 
                 { char error_msg[] = "Sintaxis XML incorrecta, XML mal construído.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 ;
 
 xml_header: HEADER_START VERSION_INFO HEADER_CLOSE 
 |           HEADER_START VERSION_INFO ENCODING_INFO HEADER_CLOSE
 |           LT GT  //ERROR NO HAY XML HEADER
                 { char error_msg[] = "Sintaxis XML incorrecta, la cabecera XML está vacía.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 |           '(' error ')' //ERROR XML HEADER MAL CONSTRUIDO
                 { char error_msg[] = "Sintaxis XML incorrecta, la cabecera XML está mal construída.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 ;
 
 element: start_tag content end_tag
@@ -55,16 +59,20 @@ element: start_tag content end_tag
 
 start_tag: OPEN_TAG 
                 { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char)); 
+        printf("\n\t\t\t\t\t\t\t\t\t\t +Malloc tag name\n");
                 strcpy(tag_name, yyval.current_tag);
                 remove_xml_notation(tag_name);
                 add_tag(stored_tags, stored_tags_size, tag_name); 
+        printf("\n\t\t\t\t\t\t\t\t\t\t -Free tag name\n");
                 free(tag_name); }
 |          LT GT //ERROR NO HAY IDENTIFICADOR DE ETIQUETA
                 { char error_msg[] = "Sintaxis XML incorrecta, no se encontró identificador de la etiqueta.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 |          '(' error ')' //ERROR IDENTIFICADOR DE ETIQUETA MAL CONSTRUIDO
                 { char error_msg[] = "Sintaxis XML incorrecta, identificador de etiqueta mal construído.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 ;
 
 end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ESTA ABIERTA ACTUALMENTE
@@ -73,32 +81,50 @@ end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ES
                 remove_xml_notation(tag_name);
                 if (compare_closing_tag(stored_tags, stored_tags_size, tag_name) != 0){
                     char* error_msg = malloc(300 * sizeof(char));
-                    printStrings(stored_tags, *stored_tags_size);
-                    strcpy(error_msg, "Sintaxis incorrecta. Se esperaba </");
-                    strcat(error_msg, get_last_tag(stored_tags,stored_tags_size));
-                    strcat(error_msg, "> y se encontro </");
-                    strcat(error_msg, tag_name);
-                    strcat(error_msg, ">");
+                    sprintf(error_msg, 
+                        "Sintaxis incorrecta. Se esperaba </%s> y se encontró </%s>", 
+                        get_last_tag(stored_tags, stored_tags_size), tag_name);
                     yyerror(stored_tags, stored_tags_size, error_msg);
-                    free(error_msg);
-                }
-                printStrings(stored_tags, *stored_tags_size);
-                remove_tag(&stored_tags, stored_tags_size);
-                printStrings(stored_tags, *stored_tags_size);
-                free(tag_name);}
-                    
+                    free(error_msg); 
+                    free(tag_name);
+                    YYABORT; 
+                } else {
+                    remove_tag(&stored_tags, stored_tags_size);
+                    free(tag_name);
+                }}
+|       CLOSE_TAG element
+                { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char));
+                strcpy(tag_name, yyval.current_tag);
+                remove_xml_notation(tag_name);
+                if (compare_closing_tag(stored_tags, stored_tags_size, tag_name) != 0){
+                    char* error_msg = malloc(300 * sizeof(char));
+                    sprintf(error_msg, 
+                        "Sintaxis incorrecta. Se esperaba </%s> y se encontró </%s>", 
+                        get_last_tag(stored_tags, stored_tags_size), tag_name);
+                    yyerror(stored_tags, stored_tags_size, error_msg);
+                    free(error_msg); 
+                    free(tag_name);
+                    YYABORT; 
+                } else {
+                    remove_tag(&stored_tags, stored_tags_size);
+                    free(tag_name);
+                }}
 |        LT '/' GT //ERROR FALTA IDENTIFIADOR
                 { char error_msg[] = "Sintaxis XML incorrecta, no se encontró identificador de la etiqueta.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 |        LT GT //ERROR FALTA CIERRE Y IDENTIFICADOR
                 { char error_msg[] = "Sintaxis XML incorrecta, se esperaba cierre te etiqueta xml y no se encontró.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg); 
+                YYABORT; }
 |        OPEN_TAG //ERROR NO ES CIERRE DE TAG
                 { char error_msg[] = "Sintaxis XML incorrecta, se esperaba cierre te etiqueta xml y se encontró etiqueta de apertura.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg);  
+                YYABORT;}
 |        '(' error ')' 
                 { char error_msg[] = "Sintaxis XML incorrecta, cierre de etiqueta mal construído.";
-                yyerror(stored_tags, stored_tags_size, error_msg); }
+                yyerror(stored_tags, stored_tags_size, error_msg);  
+                YYABORT;}
 ;
 
 content:    TEXT 
@@ -134,23 +160,29 @@ void remove_xml_notation(char* xml_tag_notation) {
    Añade una etiqueta a la pila de etiquetas. */
 void add_tag(char** stored_tags, int* stored_tags_size, const char* new_tag) {
     if (*stored_tags_size >= BASE_STORED_TAGS_SIZE) {
+        printf("\n\t\t\t\t\t\t\t\t\t\t +Realloc array");
         stored_tags = realloc(stored_tags, (*stored_tags_size + 1) *sizeof(char*));
-    } 
+    }
     stored_tags[*stored_tags_size] = malloc(strlen(new_tag)+1);
     strcpy(stored_tags[*stored_tags_size], new_tag);
-    printStrings(stored_tags, *stored_tags_size);
+    //printStrings(stored_tags, *stored_tags_size);
     *stored_tags_size += 1;
 }
 
 /* Elimina el último string añadido al array.
    Elimina la última etiqueta añadida a la pila de etiquetas. */
 void remove_tag(char*** stored_tags, int* stored_tags_size) {
+    printf("pre delte\n");
+    printStrings(*stored_tags, *stored_tags_size);
     if (*stored_tags_size > 0) {
         (*stored_tags_size)--;
         free((*stored_tags)[*stored_tags_size]);
         (*stored_tags)[*stored_tags_size] = NULL;
+        printf("\n\t\t\t\t\t\t\t\t\t\t +Realloc tag removal");
         *stored_tags = realloc(*stored_tags, (*stored_tags_size) * sizeof(char *));
     }
+    printf("post delte\n");
+    printStrings(*stored_tags, *stored_tags_size);
 }
 
 /* Recupera el último string añadido a un array de strings.
@@ -175,20 +207,24 @@ void printStrings(char **stringArray, int numStrings) {
 /* Libera la memoria de la pila de etiquetas y el contador de número de etiquetas añadidas. */
 void free_stored_tags (char** stored_tags, int* stored_tags_size) {
     for(int i=0; i < *stored_tags_size; i++){
+        printf("\n\t\t\t\t\t\t\t\t\t\t +Free post parser\n");
         free(stored_tags[i]);
     }
-    free(stored_tags);
+    printf("\n\t\t\t\t\t\t\t\t\t\t +Free post parser\n");
     free(stored_tags_size);
 }
 
 int main() {
+    printf("\n\t\t\t\t\t\t\t\t\t\t +Malloc pre parser \n");
     char** stored_tags = malloc(BASE_STORED_TAGS_SIZE * sizeof(char*));
+    printf("\n\t\t\t\t\t\t\t\t\t\t +Malloc pre parser\n");
     int* stored_tags_size = malloc(sizeof(int));
     *stored_tags_size = 0; 
-    //test_tag(stored_tags, stored_tags_size);
-    yyparse(stored_tags, stored_tags_size);
+    int result = yyparse(stored_tags, stored_tags_size);
+    if (result != 1) {
+        printf ("Sintaxis XML correcta.\n");
+    }
     free_stored_tags(stored_tags, stored_tags_size);
-    //printf ("Sintaxis XML correcta.\n");
     return 0;
 }
 
