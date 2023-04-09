@@ -32,20 +32,20 @@
 
 xml_file: xml_header element
 |         element //ERROR NO HAY XML HEADER
-                { char[] error_msg = "Sintaxis XML incorrecta, no se encontró la cabecera XML.";
+                { char error_msg[] = "Sintaxis XML incorrecta, no se encontró la cabecera XML.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 |         '(' error ')' 
-                { char[] error_msg = "Sintaxis XML incorrecta, XML mal construído.";
+                { char error_msg[] = "Sintaxis XML incorrecta, XML mal construído.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 ;
 
 xml_header: HEADER_START VERSION_INFO HEADER_CLOSE 
 |           HEADER_START VERSION_INFO ENCODING_INFO HEADER_CLOSE
 |           LT GT  //ERROR NO HAY XML HEADER
-                { char[] error_msg = "Sintaxis XML incorrecta, la cabecera XML está vacía.";
+                { char error_msg[] = "Sintaxis XML incorrecta, la cabecera XML está vacía.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 |           '(' error ')' //ERROR XML HEADER MAL CONSTRUIDO
-                { char[] error_msg = "Sintaxis XML incorrecta, la cabecera XML está mal construída.";
+                { char error_msg[] = "Sintaxis XML incorrecta, la cabecera XML está mal construída.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 ;
 
@@ -60,10 +60,10 @@ start_tag: OPEN_TAG
                 add_tag(stored_tags, stored_tags_size, tag_name); 
                 free(tag_name); }
 |          LT GT //ERROR NO HAY IDENTIFICADOR DE ETIQUETA
-                { char[] error_msg = "Sintaxis XML incorrecta, no se encontró identificador de la etiqueta.";
+                { char error_msg[] = "Sintaxis XML incorrecta, no se encontró identificador de la etiqueta.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 |          '(' error ')' //ERROR IDENTIFICADOR DE ETIQUETA MAL CONSTRUIDO
-                { char[] error_msg = "Sintaxis XML incorrecta, identificador de etiqueta mal construído.";
+                { char error_msg[] = "Sintaxis XML incorrecta, identificador de etiqueta mal construído.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 ;
 
@@ -88,16 +88,16 @@ end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ES
                 free(tag_name);}
                     
 |        LT '/' GT //ERROR FALTA IDENTIFIADOR
-                { char[] error_msg = "Sintaxis XML incorrecta, no se encontró identificador de la etiqueta.";
+                { char error_msg[] = "Sintaxis XML incorrecta, no se encontró identificador de la etiqueta.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 |        LT GT //ERROR FALTA CIERRE Y IDENTIFICADOR
-                { char[] error_msg = "Sintaxis XML incorrecta, se esperaba cierre te etiqueta xml y no se encontró.";
+                { char error_msg[] = "Sintaxis XML incorrecta, se esperaba cierre te etiqueta xml y no se encontró.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 |        OPEN_TAG //ERROR NO ES CIERRE DE TAG
-                { char[] error_msg = "Sintaxis XML incorrecta, se esperaba cierre te etiqueta xml y se encontró etiqueta de apertura.";
+                { char error_msg[] = "Sintaxis XML incorrecta, se esperaba cierre te etiqueta xml y se encontró etiqueta de apertura.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 |        '(' error ')' 
-                { char[] error_msg = "Sintaxis XML incorrecta, cierre de etiqueta mal construído.";
+                { char error_msg[] = "Sintaxis XML incorrecta, cierre de etiqueta mal construído.";
                 yyerror(stored_tags, stored_tags_size, error_msg); }
 ;
 
