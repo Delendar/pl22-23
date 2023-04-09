@@ -111,6 +111,7 @@ content:    TEXT
  - Comentarios mal construidos (2 o más guiones consecutivos dentro de un comentario
  sin ser estos los de finalización de comentario). */
 
+/* Elimina los caracteres '<' '>' y '/' de las tags XML para poder almacenarlas y compararlas. */
 void remove_xml_notation(char* xml_tag_notation) {
     int pos = 0;
 
@@ -129,6 +130,8 @@ void remove_xml_notation(char* xml_tag_notation) {
     }
 }
 
+/* Añade un string a un array de strings. 
+   Añade una etiqueta a la pila de etiquetas. */
 void add_tag(char** stored_tags, int* stored_tags_size, const char* new_tag) {
     if (*stored_tags_size >= BASE_STORED_TAGS_SIZE) {
         stored_tags = realloc(stored_tags, (*stored_tags_size + 1) *sizeof(char*));
@@ -139,6 +142,8 @@ void add_tag(char** stored_tags, int* stored_tags_size, const char* new_tag) {
     *stored_tags_size += 1;
 }
 
+/* Elimina el último string añadido al array.
+   Elimina la última etiqueta añadida a la pila de etiquetas. */
 void remove_tag(char*** stored_tags, int* stored_tags_size) {
     if (*stored_tags_size > 0) {
         (*stored_tags_size)--;
@@ -148,11 +153,14 @@ void remove_tag(char*** stored_tags, int* stored_tags_size) {
     }
 }
 
+/* Recupera el último string añadido a un array de strings.
+   Recupera la última etiqueta añadida a la pila. */
 char* get_last_tag(char** stored_tags, int* stored_tags_size) {
     return stored_tags[*stored_tags_size -1];
 }
 
-// Devuelve 0 si la etiqueta cierra correctamente la etiqueta abierta actualmente
+/* Devuelve 0 si el string pasado por parámtero es igual último string del array. 
+   Devuelve 0 si la etiqueta cierra correctamente la etiqueta abierta actualmente. */
 int compare_closing_tag(char** stored_tags, int* stored_tags_size, const char* tag_to_compare) {
     int closes = strcmp(get_last_tag(stored_tags, stored_tags_size), tag_to_compare);
     return closes;
@@ -164,6 +172,7 @@ void printStrings(char **stringArray, int numStrings) {
     }
 }
 
+/* Libera la memoria de la pila de etiquetas y el contador de número de etiquetas añadidas. */
 void free_stored_tags (char** stored_tags, int* stored_tags_size) {
     for(int i=0; i < *stored_tags_size; i++){
         free(stored_tags[i]);
@@ -178,7 +187,6 @@ int main() {
     *stored_tags_size = 0; 
     //test_tag(stored_tags, stored_tags_size);
     yyparse(stored_tags, stored_tags_size);
-    printf("OUT\n");
     free_stored_tags(stored_tags, stored_tags_size);
     //printf ("Sintaxis XML correcta.\n");
     return 0;
