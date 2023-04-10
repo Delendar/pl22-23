@@ -92,7 +92,7 @@ end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ES
                     remove_tag(&stored_tags, stored_tags_size);
                     free(tag_name);
                 }}
-|       CLOSE_TAG element
+/* |       CLOSE_TAG element
                 { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char));
                 strcpy(tag_name, yyval.current_tag);
                 remove_xml_notation(tag_name);
@@ -108,7 +108,7 @@ end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ES
                 } else {
                     remove_tag(&stored_tags, stored_tags_size);
                     free(tag_name);
-                }}
+                }} */
 |        LT '/' GT //ERROR FALTA IDENTIFIADOR
                 { char error_msg[] = "Sintaxis XML incorrecta, no se encontró identificador de la etiqueta.";
                 yyerror(stored_tags, stored_tags_size, error_msg); 
@@ -135,7 +135,9 @@ content:    TEXT
 %%
 /* Cosas que no se tienen en cuenta: 
  - Comentarios mal construidos (2 o más guiones consecutivos dentro de un comentario
- sin ser estos los de finalización de comentario). */
+ sin ser estos los de finalización de comentario). 
+ 
+ - Solo reconoce xmls con 1 tag padre. */
 
 /* Elimina los caracteres '<' '>' y '/' de las tags XML para poder almacenarlas y compararlas. */
 void remove_xml_notation(char* xml_tag_notation) {
