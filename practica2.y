@@ -32,12 +32,14 @@
 
 %%
 
-xml_file: XML_HEADER body { printf("{xml_file}\n");}
-|         element //ERROR NO HAY XML HEADER
+xml_file: XML_HEADER body
+|         element 
+                // Error. No hay XML Header
                 { char error_msg[] = "Cabecera XML inexistente.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
                 YYABORT; }
 |         error
+                // Error. XML Header mal construido
                 { char error_msg[] = "Cabecera XML mal construída.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
                 YYABORT; }
@@ -55,17 +57,20 @@ start_tag: OPEN_TAG
                 remove_xml_notation(tag_name);
                 add_tag(stored_tags, stored_tags_size, tag_name); 
                 free(tag_name); }
-|          LT GT //ERROR NO HAY IDENTIFICADOR DE ETIQUETA
+|          LT GT 
+                //ERROR NO HAY IDENTIFICADOR DE ETIQUETA
                 { char error_msg[] = "No se encontró identificador de la etiqueta.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
                 YYABORT; }
-|          error //ERROR IDENTIFICADOR DE ETIQUETA MAL CONSTRUIDO
+|          error 
+                //ERROR IDENTIFICADOR DE ETIQUETA MAL CONSTRUIDO
                 { char error_msg[] = "Identificador de etiqueta mal construído.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
                 YYABORT; }
 ;
 
-end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ESTA ABIERTA ACTUALMENTE
+end_tag: CLOSE_TAG 
+                //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ESTA ABIERTA ACTUALMENTE
                 { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char));
                 strcpy(tag_name, yyval.current_tag);
                 remove_xml_notation(tag_name);
@@ -81,15 +86,18 @@ end_tag: CLOSE_TAG //ERROR SI LA ETIQUETA DE CIERRE NO CORRESPONDE CON LA QUE ES
                     remove_tag(&stored_tags, stored_tags_size);
                     free(tag_name);
                 }}
-|        LT '/' GT //ERROR FALTA IDENTIFIADOR
+|        LT '/' GT 
+                //ERROR FALTA IDENTIFIADOR
                 { char error_msg[] = "No se encontró identificador de la etiqueta.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
                 YYABORT; }
-|        LT GT //ERROR FALTA CIERRE Y IDENTIFICADOR
+|        LT GT 
+                //ERROR FALTA CIERRE Y IDENTIFICADOR
                 { char error_msg[] = "Se esperaba cierre te etiqueta xml y no se encontró.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
                 YYABORT; }
-|        OPEN_TAG //ERROR NO ES CIERRE DE TAG
+|        OPEN_TAG 
+                //ERROR NO ES CIERRE DE TAG
                 { char error_msg[] = "Se esperaba cierre te etiqueta xml y se encontró etiqueta de apertura.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg);  
                 YYABORT;}
@@ -143,7 +151,6 @@ int count_newlines(const char* str) {
         }
         p++;
     }
-    printf("--%d--\n", count);
     return count;
 }
 
