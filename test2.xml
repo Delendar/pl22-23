@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <CATALOG>
+        <CD>
+            <YEAR>1985</YEAR>
+        </CD>
+        <CD>
+            <TITLE>Hide your heart</TITLE>
+            <ARTIST>Bonnie Tyler</ARTIST>
+            <COUNTRY>UK</COUNTRY>
+            <COMPANY>CBS Records</COMPANY>
+            <PRICE>9.90</PRICE>
+            <YEAR>1988</YEAR>
+        </CD>
+        <CD>
+            <TITLE>Greatest Hits</TITLE>
+            <ARTIST>Dolly Parton</ARTIST>
+            <COUNTRY>USA</COUNTRY>
+            <COMPANY>RCA</COMPANY>
+            <PRICE>9.90</PRICE>
+            <YEAR>1982</YEAR>
+        </CD>
+    </CATALOG>

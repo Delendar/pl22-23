@@ -3,15 +3,13 @@
 #include <stdbool.h>
 #include "practica2.tab.h"
 
-bool is_cdata = false;
-bool inside_tag = false;
+int count_newlines(const char*);
 %}
 
 lt "<"
 gt ">"
 slash "/"
 quest "?"
-eq "="\
 visual_formatters [\n\t ]*
 ws [ \t]*
 double [0-9]+"."[0-9]+
@@ -33,14 +31,16 @@ close_tag       {lt}{slash}[a-zA-Z][a-zA-Z0-9]+{gt}
 {xmlheader} { printf("XML_HEADER:[%s]\n", yytext); return XML_HEADER;}
 {comment}   { printf("COMMENT:[%s]\n", yytext); return COMMENT; }
 {open_tag}  { printf("OPEN_TAG:[%s]\n", yytext);
-            is_cdata = true; 
             yylval.current_tag=yytext; 
             return OPEN_TAG; }
-{close_tag}  { printf("CLOSE_TAG:[%s]\n", yytext); is_cdata = false; yylval.current_tag=yytext; return CLOSE_TAG; }
+{close_tag}  { printf("CLOSE_TAG:[%s]\n", yytext); yylval.current_tag=yytext; return CLOSE_TAG; }
 {gt}        { printf("GT:[%s]\n", yytext); return GT; }
 {lt}        { printf("LT:[%s]\n", yytext); return LT; }
-{visual_formatters}  { printf("VF:[%s]\n", yytext); return VF; }
-{cdata}     { printf("CDATA:[%s]\n", yytext); return CDATA; }
+{visual_formatters}  { printf("VF:[%s]\n", yytext);
+             yylval.current_text = yytext;
+             return VF; }
+{cdata}     { printf("CDATA:[%s]\n", yytext);
+             yylval.current_text = yytext;
+             return CDATA; }
 
 %%
-
