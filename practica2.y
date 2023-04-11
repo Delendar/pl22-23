@@ -20,7 +20,7 @@
 }
 
 %token <type_string> CDATA VF
-%token <type_string> XML_HEADER HEADER_START HEADER_CLOSE VERSION_INFO ENCODING_INFO
+%token <type_string> XML_HEADER
 %token <type_string> OPEN_TAG CLOSE_TAG
 %token <type_string> COMMENT
 %token <type_string> GT LT
@@ -30,7 +30,7 @@
 
 %%
 
-xml_file: XML_HEADER element { printf("{xml_file}\n");}
+xml_file: XML_HEADER body { printf("{xml_file}\n");}
 |         element //ERROR NO HAY XML HEADER
                 { char error_msg[] = "Sintaxis XML incorrecta, cabecera XML mal construída.";
                 yyerror(stored_tags, stored_tags_size, error_msg); 
@@ -53,8 +53,10 @@ xml_header: HEADER_START VERSION_INFO HEADER_CLOSE
                 YYABORT; }
 ;*/
 
-element: vf start_tag content end_tag vf 
-|        vf COMMENT element
+body: body element | ;
+
+element: vf start_tag content end_tag vf
+|        vf COMMENT
 ;
 
 start_tag: OPEN_TAG
