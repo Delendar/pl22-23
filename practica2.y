@@ -5,9 +5,6 @@
     #define BASE_STORED_TAGS_SIZE 100
     #define MAX_TAG_NAME_LENGTH 20
 
-    int mallocs = 0;
-    int frees = 0;
-
     void yyerror (char**, int*, int*, char const *);
     void add_tag(char**, int*, const char*);
     void remove_tag(char***, int*);
@@ -19,7 +16,6 @@
 %union {
     char* type_string;
     char* current_tag;
-    char* current_text;
 }
 
 %token <type_string> CDATA WS
@@ -137,11 +133,7 @@ tag_content: cdata tag_content | ;
 cdata: CDATA
 | ws1 tag_content
                 { *line_number = *line_number + 1; }
-| CDATA cdata
-| error
-                { char error_msg[] = "Error en la construccion del archivo.";
-                yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
-                YYABORT;  } ;
+| CDATA cdata ;
 
 content:    cdata
 |           element content
