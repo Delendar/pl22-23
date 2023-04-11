@@ -25,7 +25,7 @@
 %token <type_string> XML_HEADER
 %token <type_string> OPEN_TAG CLOSE_TAG
 %token <type_string> COMMENT
-%token <type_string> GT LT
+%token <type_string> GT LT EOL
 %type <type_string> start_tag
 %start xml_file
 %parse-param {char** stored_tags} {int* stored_tags_size} {int* line_number}
@@ -107,12 +107,19 @@ end_tag: CLOSE_TAG
                 YYABORT;}
 ;
 
-vf: VF { *line_number += count_newlines(yyval.current_text);} 
+vf: VF EOL { *line_number += count_newlines(yyval.current_text);} 
+| EOL VF
+| EOL
 | /* vacio */;
 
-content:    CDATA { *line_number += count_newlines(yyval.current_text); }
+cdata: CDATA
+| cdata EOL
+| 
+;
+
+content:    cdata { *line_number += count_newlines(yyval.current_text); }
 |           element content
-|           vf /* vacio */
+|           vf
 ;
 
 %%

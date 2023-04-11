@@ -10,10 +10,11 @@ lt "<"
 gt ">"
 slash "/"
 quest "?"
-visual_formatters [\n\t ]*
-ws [ \t]*
+new_line [\n]
+ws [ \n\t]*
+visual_formatters [\t ]*
 double [0-9]+"."[0-9]+
-cdata [^<>\"\']+
+cdata [^<>\"\'\n]+
 
 encoding_id     [a-zA-Z0-9\-]+
 version_info    {ws}"version="\"{double}\"{ws}
@@ -36,6 +37,7 @@ close_tag       {lt}{slash}[a-zA-Z][a-zA-Z0-9]+{gt}
 {close_tag}  { printf("CLOSE_TAG:[%s]\n", yytext); yylval.current_tag=yytext; return CLOSE_TAG; }
 {gt}        { printf("GT:[%s]\n", yytext); return GT; }
 {lt}        { printf("LT:[%s]\n", yytext); return LT; }
+{new_line}  { printf("NL:[%s]\n", yytext); return EOL; }
 {visual_formatters}  { printf("VF:[%s]\n", yytext);
              yylval.current_text = yytext;
              return VF; }
