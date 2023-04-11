@@ -1,0 +1,82 @@
+Autor: Alan Xes López Fernández
+       alan.lfernandez@udc.es
+
+Memoria de la práctica 2 - Procesamiento de lenguajes 2022/2023 - Análisis Sintáctico
+
+Creación de un analizador sintáctico de XML con un nivel básico de identificación de errores.
+
+Consideraciones:
+ - Cualquier o secuencia de caracteres en un comentario es aceptado.
+ - Se han considerado caracteres reservados de XML los siguientes: 
+    <
+    >
+    "
+    '
+   Se consideran caracteres que no pueden aparecer en el contenido de una etiqueta.
+ - Siguiendo los ejemplos del enunciado de la práctica.
+ La cabecera XML debe de contar con atributo "version" y atributo "encoding" para 
+ que esta sea aceptada.
+ - Para el identificador de una etiqueta se acepta cualquier palabra que empiece por 
+ letra ya sea minúscula o mayúscula y puede seguir por letras o números.
+ - Los contenidos de etiqueta son aceptados por el validador.
+
+Problemas conocidos:
+ - Los comentarios multilínea NO son aceptados por el validador.
+ - Algunos errores son correctamente reconocidos pero la información impresa por pantalla se duplica.
+ - Cerrar una etiqueta con un error de escritura que implique la no aparición de un "/" para cerrarla,
+ si bien no pasa el validador, el reconocimiento del error no es preciso ya que esa etiqueta la acepta
+ aunque no aceptará la siguiente ya que no será la etiqueta que le corresponderá cerrar.
+
+Consideraciones técnicas:
+ - Si bien he intentado realizar el aumento del contador de líneas directamente desde el 
+ analizador léxico (practica2.l) haciendo uso de una variable para guardarlo, definida en 
+ el código del analizador sintáctico (practica2.y), en el "union". A la hora de 
+ realizar el aumento de la variable no se porqué el valor de esta variable cambiaba 
+ aleatoriamente después de cada ejecución de una regla de la gramática.
+ - Las etiquetas deben tener máximo 20 caracteres de longitud. Modificable en la 
+ constante MAX_TAG_NAME_LENGTH en practica2.y.
+ - Se hace uso de la macro YYABORT en el caso de error para asegurar la finalización del
+ analizador.
+
+Estructuración de la solución:
+Lo primero es la creación del analizador léxico, en nuestro caso usando FLEX (practica2.l).
+La idea es definir las expresiones regulares necesarias. Entre estas destaca el uso
+de una expresión regular para únicamente detectar los cambios de línea para así poder
+mantener el número de la línea del fichero que se está a analizar.
+Se crea una expresión regular fija para la validación de la cabecera XML.
+
+Para el reconocimiento del error de cierre de una etiqueta cuando se lee una etiqueta de
+cierre inesperada, se ha hecho uso de un array de strings sobre los que se va guardando
+cada etiqueta de apertura y el último que se haya guardado se empareja con la etiqueta de
+cierre que se haya encontrado, en caso de no coincidir, no se aceptará el archivo. Este
+almacenamiento de datos es básicamente una pila. Como almacenamiento dinámico con un
+valor base para almacenar un mínimo de 100 etiquetas antes que se necesite alojar más memoria.
+Las etiquetas tienen un máximo de longitud definido por la constante MAX_TAG_NAME_LENGTH
+que en principio es de 20 caracteres.
+
+A destacar de la gramática, son las reglas "ws" y "ws1" para simplificar el reconocimiento 
+de cualquier combinación de espacios en blanco, estos son los caracteres " ", "\t", "\n". 
+Así como las reglas "tag_content" y "cdata" junto con "ws1" que aceptarán contenidos de
+etiqueta multilínea.
+
+Manual de usuario:
+El archivo Makefile cuenta con las siguientes metas:
+"compile"   -- Compila los archivos .l y .y para crear el ejecutable, llamado "practica2"
+"test-ok"      -- Ejecuta 2 tests con archivos que deben de ser aceptados por el validador.
+            Los archivos que se pasan al analizador son:
+                "testOK.xml"
+                "testOK2.xml"
+"test-fail" -- Ejecuta 5 tests con archivos que deben de resultar en error.
+            Los archivos que se pasan al analizador son:
+                "testFAIL.xml"
+                "testFAIL2.xml"
+                "testFAIL3.xml"
+                "testFAIL4.xml"
+                "testFAIL5.xml"
+"clean"     -- Elimina los archivos generados por flex y bison:
+                "lex.cc.yy"
+                "practica2.tab.c"
+                "practica2.tab.h"
+"test"      -- Compila y ejecuta los tests que resultan en archivos validados.
+            Ejecuta las metas "compile" y "test-ok"
+"all"       -- Ejecuta las metas "compile", "test-ok" y "test-fail"

@@ -1,8 +1,7 @@
 SRC = practica2
-TEST = test.txt
 LIB = lfl
 
-all: compile test test-fail
+all: compile test-ok test-fail
 
 test: compile test
 
@@ -11,7 +10,7 @@ compile:
 	bison -o $(SRC).tab.c $(SRC).y -yd
 	gcc -o $(SRC) lex.yy.c $(SRC).tab.c -$(LIB)
 
-test:
+test-ok:
 	./$(SRC) < testOK.xml
 	./$(SRC) < testOK2.xml
 
