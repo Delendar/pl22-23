@@ -5,14 +5,15 @@
     #define BASE_STORED_TAGS_SIZE 100
     #define MAX_TAG_NAME_LENGTH 20
 
+    int mallocs = 0;
+    int frees = 0;
+
     void yyerror (char**, int*, int*, char const *);
     void add_tag(char**, int*, const char*);
     void remove_tag(char***, int*);
     char* get_last_tag(char**, int*);
     int compare_closing_tag(char**, int*, const char*);
     void remove_xml_notation(char*);
-    void printStrings(char**, int);
-    int count_newlines(const char*);
 %}
 
 %union {
@@ -21,7 +22,7 @@
     char* current_text;
 }
 
-%token <type_string> CDATA VF
+%token <type_string> CDATA WS
 %token <type_string> XML_HEADER
 %token <type_string> OPEN_TAG CLOSE_TAG
 %token <type_string> COMMENT
@@ -32,8 +33,9 @@
 
 %%
 
+/* Define la estructura del archivo. */
 xml_file: XML_HEADER body
-|         element 
+|         body 
                 // Error. No hay XML Header
                 { char error_msg[] = "Cabecera XML inexistente.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
@@ -45,17 +47,24 @@ xml_file: XML_HEADER body
                 YYABORT; }
 ;
 
-body: body element | ;
+body: body element | /* vacio */ | error 
+                { char error_msg[] = "Error en la construccion del archivo.";
+                yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
+                YYABORT;  };
 
-element: vf start_tag content end_tag vf
-|        vf COMMENT
+/* Define la estructura de una etiqueta o comentario */
+element: ws start_tag content end_tag ws
+|        ws COMMENT
+|        error { char error_msg[] = "Error en la construccion del archivo.";
+                yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
+                YYABORT;  };
 ;
 
 start_tag: OPEN_TAG
                 { char* tag_name = malloc(strlen(yyval.current_tag) * sizeof(char));
                 strcpy(tag_name, yyval.current_tag);
                 remove_xml_notation(tag_name);
-                add_tag(stored_tags, stored_tags_size, tag_name); 
+                add_tag(stored_tags, stored_tags_size, tag_name);
                 free(tag_name); }
 |          LT GT 
                 //ERROR NO HAY IDENTIFICADOR DE ETIQUETA
@@ -79,14 +88,14 @@ end_tag: CLOSE_TAG
                     sprintf(error_msg, "Se esperaba </%s> y se encontró </%s>",
                         get_last_tag(stored_tags, stored_tags_size), tag_name);
                     yyerror(stored_tags, stored_tags_size, line_number, error_msg);
-                    free(error_msg); 
+                    free(error_msg);
                     free(tag_name);
                     YYABORT; 
                 } else {
                     remove_tag(&stored_tags, stored_tags_size);
                     free(tag_name);
                 }}
-|        LT '/' GT 
+|        LT CDATA GT 
                 //ERROR FALTA IDENTIFIADOR
                 { char error_msg[] = "No se encontró identificador de la etiqueta.";
                 yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
@@ -107,27 +116,39 @@ end_tag: CLOSE_TAG
                 YYABORT;}
 ;
 
-vf: VF EOL { *line_number += count_newlines(yyval.current_text);} 
-| EOL VF
-| EOL
-| /* vacio */;
+// Acepta cualquier combinacion de " " "\t" "\n"
+ws: ws1 ws | /* vacio */;
+
+ws1: WS EOL 
+                { *line_number = *line_number + 1; } 
+| EOL WS
+                { *line_number = *line_number + 1; } 
+| EOL 
+                { *line_number = *line_number + 1; } 
+| WS
+| error
+                { char error_msg[] = "Error en la construccion del archivo.";
+                yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
+                YYABORT;  };
+
+// Acepta cualquier combinacion de CDATA y " " "\t" "\n"
+tag_content: cdata tag_content | ;
 
 cdata: CDATA
-| cdata EOL
-| 
-;
+| ws1 tag_content
+                { *line_number = *line_number + 1; }
+| CDATA cdata
+| error
+                { char error_msg[] = "Error en la construccion del archivo.";
+                yyerror(stored_tags, stored_tags_size, line_number, error_msg); 
+                YYABORT;  } ;
 
-content:    cdata { *line_number += count_newlines(yyval.current_text); }
+content:    cdata
 |           element content
-|           vf
+|           ws
 ;
 
 %%
-/* Cosas que no se tienen en cuenta: 
- - Comentarios mal construidos (2 o más guiones consecutivos dentro de un comentario
- sin ser estos los de finalización de comentario). 
- 
- - Solo reconoce xmls con 1 tag padre. */
 
 /* Elimina los caracteres '<' '>' y '/' de las tags XML para poder almacenarlas y compararlas. */
 void remove_xml_notation(char* xml_tag_notation) {
@@ -148,19 +169,6 @@ void remove_xml_notation(char* xml_tag_notation) {
     }
 }
 
-/* Obtiene el numero de saltos de linea de un string. */
-int count_newlines(const char* str) {
-    int count = 0;
-    const char* p = str;
-    while (*p != '\0') {
-        if (*p == '\n') {
-            count++;
-        }
-        p++;
-    }
-    return count;
-}
-
 /* Añade un string a un array de strings. 
    Añade una etiqueta a la pila de etiquetas. */
 void add_tag(char** stored_tags, int* stored_tags_size, const char* new_tag) {
@@ -179,7 +187,6 @@ void remove_tag(char*** stored_tags, int* stored_tags_size) {
         (*stored_tags_size)--;
         free((*stored_tags)[*stored_tags_size]);
         (*stored_tags)[*stored_tags_size] = NULL;
-        //*stored_tags = realloc(*stored_tags, (*stored_tags_size) * sizeof(char *));
     }
 }
 
@@ -196,12 +203,6 @@ int compare_closing_tag(char** stored_tags, int* stored_tags_size, const char* t
     return closes;
 }
 
-void printStrings(char **stringArray, int numStrings) {
-    for (int i = 0; i < numStrings; i++) {
-        printf(" %s : ", stringArray[i]);
-    }
-}
-
 /* Libera la memoria de la pila de etiquetas y el contador de número de etiquetas añadidas. */
 void free_stored_tags (char** stored_tags, int* stored_tags_size) {
     for(int i=0; i < *stored_tags_size; i++){
@@ -214,7 +215,7 @@ void free_stored_tags (char** stored_tags, int* stored_tags_size) {
 int main() {
     char** stored_tags = malloc(BASE_STORED_TAGS_SIZE * sizeof(char*));
     int* stored_tags_size = malloc(sizeof(int));
-    *stored_tags_size = 0; 
+    *stored_tags_size = 0;
     int* line_number = malloc(sizeof(int));
     *line_number = 1;
     int result = yyparse(stored_tags, stored_tags_size, line_number);
@@ -227,5 +228,4 @@ int main() {
 
 void yyerror (char** stored_tags, int* stored_tags_size, int* line_number,char const *message) { 
     printf("\nSintaxis XML incorrecta. Error en linea %d. %s\n", *line_number, message);
-    //fprintf (stderr, "%s\n", message);
 }
