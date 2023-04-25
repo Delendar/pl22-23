@@ -4,6 +4,8 @@ elemento {}
 
 .clase.subclase {}
 
+.clase.subclase .sub-elemento {}
+
 elem:pseudoclase {}
 
 elem::pseudoelemento {}
