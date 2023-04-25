@@ -3,19 +3,19 @@ TEST_FILE = prueba.css
 
 all: compile
 
-lex: lex lex-text
+lex: lex-compile lex-text
 
 lex-compile:
 	flex $(SOURCE).l
 	gcc -o $(SOURCE) lex.yy.c
 
+lex-test:
+	./$(SOURCE) < $(TEST_FILE)
+
 compile:
 	flex $(SRC).l
 	bison -o $(SRC).tab.c $(SRC).y -yd
 	gcc -o $(SRC) lex.yy.c $(SRC).tab.c -$(LIB)
-	
-lex-test:
-	./$(SOURCE) < $(TEST_FILE)
 	
 test: test1 test2 test3
 
