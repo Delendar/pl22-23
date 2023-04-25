@@ -24,7 +24,19 @@ p { /* Elemento */ }
 
 .clase { /* Clase */ }
 
-.clase.subclase { /* Clase y subclase */ }
+.clase.subclase { /* Subclase */ }
+
+element:pseudoclass { /* Pseudo clases */ }
+
+element::pseudoelement { /* Pseudo elemento */ }
+
+p .sub-elemento { }
+
+.clase .sub-elemento { }
+
+.clase.subclase .sub-elemento {  }
+
+p, h1, h2, .clase, .clase.subclase { /* Multiples selectores. */ }
 
 div {
   color: red;
@@ -34,7 +46,11 @@ div {
 ```
 
 ```html
-<div class="clase1">
+<div class="clase">
+  <div class="elemento">
+  </div>
+</div>
+<div class="elemento">
 </div>
 ```
 
