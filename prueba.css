@@ -1,0 +1,11 @@
+elemento {}
+
+.clase {}
+
+.clase.subclase {}
+
+elem:pseudoclase {}
+
+elem::pseudoelemento {}
+
+elemento, .clase, .subclase {}
