@@ -1,6 +1,6 @@
+%option noyywrap
 %{
 #include <stdio.h>
-#include "analizador.tab.h"
 %}
 
 lkey {
@@ -33,8 +33,6 @@ prop_value prop_value
 
 %%
 
-{lkey}          { printf("lkey\n"); }
-{rkey}          { printf("rkey\n"); }
 {comma}         { printf("comma"); }
 {comment}       { printf("comment\n"); }
 {element}       { printf("element\n"); }
@@ -47,6 +45,7 @@ prop_value prop_value
 
 %%
 
-int main {
+int main() {
     yylex();
+    return 0;
 }

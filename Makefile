@@ -3,7 +3,7 @@ TEST_FILE = prueba.css
 
 all: compile
 
-lex: lex-compile lex-text
+lex: lex-compile lex-test
 
 lex-compile:
 	flex $(SOURCE).l
