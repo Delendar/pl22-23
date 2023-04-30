@@ -13,9 +13,9 @@ lex-test:
 	./$(SOURCE) < $(TEST_FILE)
 
 compile:
-	flex $(SRC).l
-	bison -o $(SRC).tab.c $(SRC).y -yd
-	gcc -o $(SRC) lex.yy.c $(SRC).tab.c -$(LIB)
+	flex $(SOURCE).l
+	bison -o $(SOURCE).tab.c $(SOURCE).y -yd
+	gcc -o $(SOURCE) lex.yy.c $(SOURCE).tab.c -lfl
 	
 test: test1 test2 test3
 
