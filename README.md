@@ -85,3 +85,5 @@ Subclase: DOT nombre DOT nombre OPKEY ATRIBUTOS CLKEY
 
 Tracking de numeros de linea 
 https://stackoverflow.com/questions/22407730/bison-line-number-included-in-the-error-messages
+
+https://stackoverflow.com/questions/13317634/flex-yylineno-set-to-1

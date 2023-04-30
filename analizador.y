@@ -4,8 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 extern int yylex (void);
+extern int yylineno;
 void yyerror (char const *);
 %}
+%locations
 %union{
     int linea;
 }
@@ -38,7 +40,7 @@ declarations: declaration declarations
 declaration: PROP_NAME PROP_VALUE
 %%
 /*CODE*/
-int main(int argc, char *argv[]){
+int main(){
     yylval.linea=0;
     extern FILE *yyin;
     yyin=stdin;
@@ -52,4 +54,3 @@ int main(int argc, char *argv[]){
     }
     return 0;
 }
-void yyerror (char const *message) { fprintf (stderr, "%s\n", message);}

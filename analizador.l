@@ -1,8 +1,10 @@
 %option noyywrap
-%option yylineno
 %{
 #include <stdio.h>
+#include "analizador.tab.h"
+int lines = 0;
 %}
+%option yylineno
 
 lkey {
 rkey }
@@ -26,7 +28,7 @@ pseudoelement {std_name}"::"{std_name}
 
 nested_element_head {element}|{class}|{subclass}
 nested_element_tail {class}|{subclass}
-nested_element      {nested_element_head}{ws}+{nested_element_tail}
+nested_element   {nested_element_head}{ws}+{nested_element_tail}
 
 /* Reconocedores de propiedades. */
 prop_name       {std_name}{ws}*":"
@@ -37,14 +39,14 @@ prop_value_px   {std_num}"px"{ws}*";"
 %%
 
 {comma}         { printf("comma: [%s]", yytext); }
-"/*"[^*/]*"*/"       { printf("\ncomment: [%s]", yytext); }
+"/*"[^*/]*"*/"  { printf("\ncomment: [%s]", yytext); }
 
 {element}       { printf("\nelement: [%s]", yytext); }
 {id}            { printf("\nid: [%s]", yytext); }
 {class}         { printf("\nclass: [%s]", yytext); }
 {subclass}      { printf("\nsubclass: [%s]", yytext); }
 {pseudoclass}   { printf("\npseudoclass: [%s]", yytext); }
-{pseudoelement}  { printf("\npseudoelement: [%s]", yytext); }
+{pseudoelement} { printf("\npseudoelement: [%s]", yytext); }
 {nested_element} { printf("\nnested_element: [%s]", yytext); }
 
 {prop_name}         { printf("\tp{%s}", yytext); }
@@ -53,8 +55,12 @@ prop_value_px   {std_num}"px"{ws}*";"
 {prop_value_px}     { printf("vpx{%s}",yytext); }
 
 %%
-
+/*
 int main() {
     yylex();
     return 0;
+}*/
+
+void yyerror (char const *message) { 
+    fprintf (stderr, "%s {%d} [%d]\n", message, yylineno, lines);
 }

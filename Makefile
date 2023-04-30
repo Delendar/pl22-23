@@ -1,5 +1,6 @@
 SOURCE = analizador
 TEST_FILE = prueba.css
+LIB = lfl
 
 all: compile
 
@@ -15,15 +16,7 @@ lex-test:
 compile:
 	flex $(SOURCE).l
 	bison -o $(SOURCE).tab.c $(SOURCE).y -yd
-	gcc -o $(SOURCE) lex.yy.c $(SOURCE).tab.c -lfl
-	
-test: test1 test2 test3
+	gcc -o $(SOURCE) lex.yy.c $(SOURCE).tab.c -$(LIB) -Ly
 
-test1:
-	./$(SOURCE) < test1.txt
-
-test2:
-	./$(SOURCE) < test2.txt
-
-test3:
-	./$(SOURCE) < practica1.txt
+test:
+	./$(SOURCE) < $(TEST_FILE)
