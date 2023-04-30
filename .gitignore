@@ -1,3 +1,5 @@
 *.yy.c
 *.exe
 settings.json
+*.tab.c
+*.tab.h
