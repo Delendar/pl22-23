@@ -82,3 +82,6 @@ Subclase: DOT nombre DOT nombre OPKEY ATRIBUTOS CLKEY
 ; -> eos
 !important -> importante
 ```
+
+Tracking de numeros de linea 
+https://stackoverflow.com/questions/22407730/bison-line-number-included-in-the-error-messages
