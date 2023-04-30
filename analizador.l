@@ -13,15 +13,15 @@ ws [ \t\n]
 /* Simplificadores de expresiones. */
 std_name [a-zA-Z][a-zA-Z0-9-]*
 
-comment /*.*/
+comment "/*"."*/"
 
 /* Reconocedores de selectores. */
 element      {std_name}
-id           #{std_name}
-class        .{std_name}
+id           "#"{std_name}
+class        "."{std_name}
 subclass     {class}{class}+
-pseudoclass :{std_name}
-pseudoelement ::{std_name}
+pseudoclass  {std_name}":"{std_name}
+pseudoelement {std_name}"::"{std_name}
 
 nested_element_head {element}|{class}|{subclass}
 nested_element_tail {class}|{subclass}
@@ -33,15 +33,15 @@ prop_value prop_value
 
 %%
 
-{comma}         { printf("comma"); }
-{comment}       { printf("comment\n"); }
-{element}       { printf("element\n"); }
-{id}            { printf("id\n"); }
-{class}         { printf("class\n"); }
-{subclass}      { printf("subclass\n"); }
-{pseudoclass}   { printf("pseudoclass\n"); }
-{pseudoelement}  { printf("pseudoelement\n"); }
-{nested_element} { printf("nested_element\n"); }
+{comma}         { printf("comma: [%s]", yytext); }
+{comment}       { printf("\ncomment: [%s]", yytext); }
+{element}       { printf("\nelement: [%s]", yytext); }
+{id}            { printf("\nid: [%s]", yytext); }
+{class}         { printf("\nclass: [%s]", yytext); }
+{subclass}      { printf("\nsubclass: [%s]", yytext); }
+{pseudoclass}   { printf("\npseudoclass: [%s]", yytext); }
+{pseudoelement}  { printf("\npseudoelement: [%s]", yytext); }
+{nested_element} { printf("\nnested_element: [%s]", yytext); }
 
 %%
 

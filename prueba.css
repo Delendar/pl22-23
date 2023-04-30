@@ -10,4 +10,4 @@ elem:pseudoclase {}
 
 elem::pseudoelemento {}
 
-elemento, .clase, .subclase {}
+elemento, .clase, .clase.subclase, ps:class, ps::elem, .c.s .n {}
