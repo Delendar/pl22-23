@@ -7,13 +7,19 @@ Estadísticas:
 - [ ] Número de elementos que se modifican.
 - [ ] Número de id's que se modifican.
 - [ ] Número de clases y subclases que se modifican.
+- [ ] Número de selectores con elementos anidados.
+  - Esto a diferencia de las demás estadísticas lo lleva el parser.
 - [ ] Número de atributos totales.
   - [ ] Número de veces que aparece un atributo.
+    - Esto a diferencia de las demás estadísticas lo lleva el parser.
   - [ ] Número de valores en pixeles.
   - [ ] Número de valores en porcentajes.
   - [ ] Número de color en formato HTML.
   - [ ] Numero de atributos !important.
 - [ ] ¿Número de llamadas a funciones?
+- [ ] Número de selectores vacíos (no aplican ninguna propiedad).
+  - Guardar línea y nombre de selector?
+- [ ] ¿Selectores sobreescritos?
 
 ```css
 /* Comentario */

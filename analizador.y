@@ -12,32 +12,41 @@ void yyerror (char const *);
     int linea;
 }
 /*TOKENS*/
-%token LKEY RKEY COMMA CHILD ADJ_SIB GEN_SIB
-%token WS EOL
-%token COMMENT
-%token ID SELECTOR_NAME
+%token SELECTOR_START SELECTOR_END COMMA COLON SEMICOLON
+%token SPACES EOL
+%token ELEMENT ID CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEM
 %token PROP_NAME PROP_VALUE
 %start css
 %%
 /*RULES*/
-css : selector css
-    | selector
+css : selector
+    | selector css
 
-selector: selectors LKEY declarations RKEY
+selector: selectors SELECTOR_START declarations SELECTOR_END
 
-selectors: SELECTOR_NAME
-    | SELECTOR_NAME character selectors
+selectors: 
+      /* Selector normal. */
+      selector_name
+      /* Selectores anidados. */
+    | selector_nested
+      /* Múltiples selectores. */
+    | selector_name COMMA selectors
 
-character: COMMA
-    | CHILD
-    | ADJ_SIB
-    | GEN_SIB
-    | WS
+selector_name: ELEMENT | CLASS | SUBCLASS | ID | PSEUDOCLASS | PSEUDOELEMENT
 
-declarations: declaration declarations
-    | declaration
+selector_nested: 
+      selector_name ws CLASS
+    | selector_name ws SUBCLASS
 
-declaration: PROP_NAME PROP_VALUE
+declarations: property
+    | property declarations
+
+property: PROP_NAME COLON PROP_VALUE SEMICOLON
+
+/* Gramática reconocedora de espacios en blanco. */
+ws: 
+
+
 %%
 /*CODE*/
 int main(){
