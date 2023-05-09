@@ -12,32 +12,42 @@ void yyerror (char const *);
     int linea;
 }
 /*TOKENS*/
-%token LKEY RKEY COMMA CHILD ADJ_SIB GEN_SIB
-%token WS EOL
-%token COMMENT
-%token ID SELECTOR_NAME
-%token PROP_NAME PROP_VALUE
+%token SELECTOR_START SELECTOR_END COMMA
+%token ELEMENT ID CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
+%token PROP_NAME VALUE_TXT VALUE_PX VALUE_PERCENTAGE VALUE_HTML_COLOR
 %start css
 %%
 /*RULES*/
-css : selector css
-    | selector
+css : css style_modifier | /* vacio */
 
-selector: selectors LKEY declarations RKEY
+style_modifier: selectors SELECTOR_START declarations SELECTOR_END
 
-selectors: SELECTOR_NAME
-    | SELECTOR_NAME character selectors
+selectors: 
+      /* Selector normal. */
+      selector_name
+      /* Selectores múltiples. */
+    | selectors COMMA selector_name
 
-character: COMMA
-    | CHILD
-    | ADJ_SIB
-    | GEN_SIB
-    | WS
+selector_name: 
+    | ELEMENT   { /* Añadir a lista de elementos modificados */ }
+    | CLASS     { /* Añadir a clases modificadas */ }
+    | SUBCLASS  { /* Añadir a subclases modificadas */ }
+    | ID        { /* Añadir a id's modificados */ }
+    | PSEUDOCLASS   { /* Añadir a pseudoclases modificadas */ }
+    | PSEUDOELEMENT { /* Añadir a pseudoelementos modificados */ }
+    | NESTED_ELEMENT { /* Añadir a elementos anidados modificados */ }
 
-declarations: declaration declarations
-    | declaration
+declarations: declarations property
+    | /* vacio */
 
-declaration: PROP_NAME PROP_VALUE
+property: PROP_NAME property_value
+
+property_value:
+    | VALUE_TXT
+    | VALUE_PX
+    | VALUE_PERCENTAGE
+    | VALUE_HTML_COLOR
+
 %%
 /*CODE*/
 int main(){
