@@ -61,6 +61,43 @@ property_value:
     | VALUE_HTML_COLOR
 
 %%
+
+unsigned long hash_code(const char *str) {
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+
+    return hash;
+}
+
+void add_string(char** strings, int* strings_size, const char* new_string) {
+    if (*strings_size >= BASE_STORED_TAGS_SIZE) {
+        strings = realloc(strings, (*strings_size + 1) *sizeof(char*));
+    }
+    strings[*strings_size] = malloc(strlen(new_string)+1);
+    strcpy(strings[*strings_size], new_string);
+    *strings_size += 1;
+}
+
+void remove_string(char*** strings, int* strings_size) {
+    if (*strings_size > 0) {
+        (*strings_size)--;
+        free((*strings)[*strings_size]);
+        (*strings)[*strings_size] = NULL;
+    }
+}
+
+void free_strings(char** strings, int* strings_size) {
+    for(int i=0; i < *strings_size; i++){
+        free(strings[i]);
+    }
+    free(strings);
+    free(strings_size);
+}
+
 /*CODE*/
 int main(){
     yylval.linea=0;
