@@ -15,6 +15,7 @@ ws [ \t\n]
 /* Simplificadores de expresiones. */
 std_name [a-zA-Z][a-zA-Z0-9-]*
 std_num  [0-9]*
+comment "/*"[^*/]*"*/"
 
 /* Reconocedores de selectores. */
 element      {std_name}
@@ -53,7 +54,7 @@ prop_value_html_weol "#"{std_num}{ws}*";"
         return SELECTOR_START; }
 {rkey}  { printf(" SE "); 
         return SELECTOR_END; }
-"/*"[^*/]*"*/"  { yylineno += count_newlines(yytext);}
+{comment}  { yylineno += count_newlines(yytext);}
 
 {element}       { printf("\nelement");  
                 return ELEMENT; }
