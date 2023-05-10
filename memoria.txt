@@ -41,11 +41,33 @@ detalle de la implementación del código en sí.
 
 3.1) ANALIZADOR LÉXICO
 
+En este sección, explicaremos el archivo "analizador.l". De todas maneras, cabe
+resaltar que se han hecho numerosos comentarios en el código para facilitar así
+su lectura. En primer lugar, en la sección de declaraciones, todas las 
+definiciones estan acompañadas de un nombre bastante clarificativo. Destacar el
+manejo de los espacios y saltos de linea ("ws"). Nos decidimos por reconocerlos
+en nuestro analizador léxico para tener una gramática más sencilla.
 
+Nuestra sección de reglas es de sencilla comprensión ya que la mayoría de las 
+definiciones devuelven al analizador sintáctico un token con su nombre. En algunos
+casos sensibles, como "nested_element_weol" o "prop_name_weol" entre otros, se 
+llama a la función "count_newlines". Esta se explicará en el parrafo siguiente en
+la sección de código.
+
+En esta última sección, resaltar la función "count_newlines" que tal y como su
+nombre indica escanea un string para saber si en el se haya el caracter '\n'. 
+Esta función es útil para poder printear en pantalla la línea en la que se
+comente un error sintáctico, por ejemplo.
 
 3.2) ANALIZADOR SINTÁCTICO
 
+En este apartado, nos centramos en el archivo "analizador.y". Cabe destacar que al
+igual que con "analizador.l", creemos que el código esta bien comentado, y las 
+variables y funciones tienen nombres claros para facilitar su comprensión.
 
+En la sección de reglas gramaticales ...
+
+Por último, en el apartado de cógido, destacar ...
 ##################################################################################
 4.) TRABAJO A FUTURO
 
