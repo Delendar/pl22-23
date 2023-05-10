@@ -2,7 +2,6 @@
 %{
 #include <stdio.h>
 #include "analizador.tab.h"
-int lines = 0;
 %}
 %option yylineno
 
@@ -54,7 +53,7 @@ prop_value_html_weol "#"{std_num}{ws}*";"
         return SELECTOR_START; }
 {rkey}  { printf(" SE "); 
         return SELECTOR_END; }
-"/*"[^*/]*"*/"  { }
+"/*"[^*/]*"*/"  { yylineno += count_newlines(yytext);}
 
 {element}       { printf("\nelement");  
                 return ELEMENT; }
@@ -68,31 +67,37 @@ prop_value_html_weol "#"{std_num}{ws}*";"
                 return PSEUDOCLASS; }
 {pseudoelement} { printf("\npseudoelement");  
                 return PSEUDOELEMENT; }
-{nested_element}      { printf("\nnested_element");  
-                      return NESTED_ELEMENT; }
-{nested_element_weol} { printf("\nnested_element");
-                      return NESTED_ELEMENT; }
+{nested_element}        { printf("\nnested_element");  
+                        return NESTED_ELEMENT; }
+{nested_element_weol}   { printf("\nnested_element");
+                        yylineno += count_newlines(yytext);
+                        return NESTED_ELEMENT; }
 
-{prop_name}             { printf(" prop_name"); 
-                         return PROP_NAME; }
-{prop_name_weol}        { printf(" prop_name"); 
-                         return PROP_NAME;  }
-{prop_value_txt}        { printf("prop_value"); 
-                         return VALUE_TXT;  }
-{prop_value_txt_weol}   { printf("prop_value"); 
-                         return VALUE_TXT; }
-{prop_value_perc}       { printf("prop_value"); 
-                         return VALUE_PERCENTAGE; }
-{prop_value_perc_weol}  { printf("prop_value"); 
-                         return VALUE_PERCENTAGE; }
-{prop_value_px}         { printf("prop_value"); 
-                         return VALUE_PX; }
-{prop_value_px_weol}    { printf("prop_value"); 
-                         return VALUE_PX; }
-{prop_value_html}       { printf("prop_value"); 
-                         return VALUE_HTML_COLOR; }
-{prop_value_html_weol}  { printf("prop_value"); 
-                         return VALUE_HTML_COLOR; }
+{prop_name}             { printf(" prop_name");
+                        return PROP_NAME; }
+{prop_name_weol}        { printf(" prop_name");
+                        yylineno += count_newlines(yytext);
+                        return PROP_NAME;  }
+{prop_value_txt}        { printf("prop_value");
+                        return VALUE_TXT;  }
+{prop_value_txt_weol}   { printf("prop_value");
+                        yylineno += count_newlines(yytext);
+                        return VALUE_TXT; }
+{prop_value_perc}       { printf("prop_value");
+                        return VALUE_PERCENTAGE; }
+{prop_value_perc_weol}  { printf("prop_value");
+                        yylineno += count_newlines(yytext);
+                        return VALUE_PERCENTAGE; }
+{prop_value_px}         { printf("prop_value");
+                        return VALUE_PX; }
+{prop_value_px_weol}    { printf("prop_value");
+                        yylineno += count_newlines(yytext);
+                        return VALUE_PX; }
+{prop_value_html}       { printf("prop_value");
+                        return VALUE_HTML_COLOR; }
+{prop_value_html_weol}  { printf("prop_value");
+                        yylineno += count_newlines(yytext);
+                        return VALUE_HTML_COLOR; }
 
 {eol} {  }
 

@@ -9,7 +9,19 @@ void yyerror (char const *);
 %}
 %locations
 %union{
-    int linea;
+    int element_stat;
+    int class_stat;
+    int subclass_stat;
+    int id_stat;
+    int pseudoclass_stat;
+    int nested_stat;
+    int comment_stat;
+    int prop_val_txt_stat;
+    int prop_val_px_stat;
+    int prop_val_perc_stat;
+    int prop_val_html_stat;
+    int empty_selector_stat;
+    /* Array de */
 }
 /*TOKENS*/
 %token SELECTOR_START SELECTOR_END COMMA
