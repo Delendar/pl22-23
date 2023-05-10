@@ -26,8 +26,7 @@ pseudoclass  {std_name}":"{std_name}
 pseudoelement {std_name}"::"{std_name}
 
 
-/* Esto debe de reconocerlo la gramática.
-    NE_HEAD whitespaces NE_TAIL */
+/* Esto debe de reconocerlo la gramática. NE_HEAD whitespaces NE_TAIL */
 nested_element_head {element}|{class}|{subclass}
 nested_element_tail {class}|{subclass}
 nested_element      {nested_element_head}{spaces}+{nested_element_tail}
