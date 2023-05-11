@@ -6,16 +6,33 @@
 
 #define HASHMAP_SIZE 100
 
-typedef struct Selector_Info {
+typedef struct Selector_Map_Info {
     char* selector;
     int frequency;
     int* lines;
-} Selector_Info;
+    int num_lines;
+} Selector_Map_Info;
 
-typedef struct Node {
+typedef struct Selector_Map_Node {
     Selector_Info* data;
-    struct Node* next;
-} Node;
+    struct Selector_Map_Node* next;
+} Selector_Map_Node;
+
+typedef struct Property_Map_Info {
+    char* property;
+    int frequency;
+    int* lines;
+    int num_lines;
+    int child_of;
+} Property_Map_Info;
+
+typedef struct Property_Map_Node {
+    Property_Info* data;
+    struct Property_Map_Node* next;
+} Property_Map_Node;
+
+Selector_Map_Node* selectors_hash_map[HASHMAP_SIZE];
+Property_Map_Node* properties_hash_map[HASHMAP_SIZE];
 
 extern int yylex (void);
 extern int yylineno;
@@ -23,6 +40,7 @@ void yyerror (char const *);
 %}
 %locations
 %union{
+    int total_selectors_stat;
     int element_stat;
     int class_stat;
     int subclass_stat;
@@ -47,6 +65,7 @@ void yyerror (char const *);
 css : css style_modifier | /* vacio */
 
 style_modifier: selectors SELECTOR_START declarations SELECTOR_END
+            { /* is_new_selector = true */}
 
 selectors: 
       /* Selector normal. */
@@ -66,7 +85,8 @@ selector_name:
 declarations: declarations property
     | /* vacio */
 
-property: PROP_NAME property_value
+property: PROP_NAME property_value 
+                { /*  */}
 
 property_value:
     | VALUE_TXT
@@ -86,24 +106,26 @@ unsigned int hash(char* str) {
     return hash % HASH_SIZE;
 }
 
-Selector_Info* create_selector_info(char* selector, int line) {
-    Selector_Info* si = (Selector_Info*) malloc(sizeof(Selector_Info));
-    si->word = strdup(selector);
-    si->frequency = 1;
-    si->lines = (int*) malloc(sizeof(int));
-    si->lines[0] = line;
+Selector_Map_Info* create_selector_info(char* selector, int line) {
+    Selector_Map_Info* smi = (Selector_Map_Info*) malloc(sizeof(Selector_Map_Info));
+    smi->selector = strdup(selector);
+    smi->frequency = 1;
+    smi->num_lines = 1;
+    smi->lines = (int*) malloc(sizeof(int));
+    smi->lines[0] = line;
 
-    return si;
+    return smi;
 }
 
 void add_selector(char* selector, int line) {
     unsigned int h = hash(selector);
-    Node* node = hash_table[h];
+    Selector_Map_Node* node = hash_table[h];
 
     while (node != NULL) {
         // Si ya existe el mismo selector.
         if (strcmp(node->data->selector, selector) == 0) {
             node->data->frequency++;
+            node->data->num_lines++;
             node->data->lines = (int*) realloc(node->data->lines, node->data->num_lines * sizeof(int));
             node->data->lines[node->data->num_lines - 1] = line;
             return;
@@ -111,11 +133,53 @@ void add_selector(char* selector, int line) {
         node = node->next;
     }
 
-    Selector_Info* si = create_selector_info(selector, line);
-    node = (Node*) malloc(sizeof(Node));
-    node->data = si;
-    node->next = hash_table[h];
-    hash_table[h] = node;
+    Selector_Map_Info* smi = create_selector_info(selector, line);
+    node = (Selector_Map_Node*) malloc(sizeof(Selector_Map_Node));
+    node->data = smi;
+    node->next = selectors_hash_map[h];
+    selectors_hash_map[h] = node;
+}
+
+Property_Map_Info* create_property_info(char* property, int line, int child_of) {
+    Property_Map_Info* pmi = (Property_Map_Info*) malloc(sizeof(Property_Map_Info));
+    pmi->selector = strdup(property);
+    pmi->frequency = 1;
+    pmi->num_lines = 1;
+    pmi->lines = (int*) malloc(sizeof(int));
+    pmi->lines[0] = line;
+    pmi->child_of = child_of;
+
+    return pmi;
+}
+
+void add_property(char* property, int line, int total_selectors_stat, int child_of) {
+    unsigned int h = hash(property);
+    Property_Map_Node* node = hash_table[h];
+
+    while (node != NULL) {
+        // Si ya existe el mismo property.
+        if (strcmp(node->data->property, property) == 0 && total_selectors_stat==child_of) {
+            node->data->frequency++;
+            node->data->num_lines++;
+            node->data->lines = (int*) realloc(node->data->lines, node->data->num_lines * sizeof(int));
+            node->data->lines[node->data->num_lines - 1] = line;
+            return;
+        } else {
+            node->data->frequency = 1;
+            node->data->num_lines = 1;
+            node->data->lines = (int*) realloc(node->data->lines, node->data->num_lines * sizeof(int));
+            node->data->lines[node->data->num_lines - 1] = line;
+            node->data->child_of = child_of;
+            return;
+        }
+        node = node->next;
+    }
+
+    Property_Map_Info* pmi = create_selector_info(selector, line);
+    node = (Property_Map_Node*) malloc(sizeof(Node));
+    node->data = pmi;
+    node->next = properties_hash_map[h];
+    properties_hash_map[h] = node;
 }
 
 void add_string(char** strings, int* strings_size, const char* new_string) {
