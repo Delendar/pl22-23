@@ -50,7 +50,7 @@ prop_value_px        {std_num}"px"
 {colon}     { return COLON; }
 {semicolon} { return SEMICOLON; }
 {hash}      { return HASH; }
-{comment}   { yylineno += count_newlines(yytext);}
+{comment}   { yylval.comment_counter++; }
 
 {std_name}      { yylval.string = strdup(yytext); return STANDARD_NAME; }
 {std_num}       { return STANDARD_NUM; }
@@ -60,7 +60,6 @@ prop_value_px        {std_num}"px"
 {pseudoclass}   { yylval.string = strdup(yytext); return PSEUDOCLASS; }
 {pseudoelement} { yylval.string = strdup(yytext); return PSEUDOELEMENT; }
 {nested_element}        { yylval.string = strdup(yytext); return NESTED_ELEMENT; }
-{nested_element_weol}   { yylval.string = strdup(yytext); return NESTED_ELEMENT; }
 
 {prop_value_perc}       { return VALUE_PERCENTAGE; }
 

@@ -39,23 +39,24 @@ extern int yylineno;
 void yyerror (char const *);
 void removeSpacesExceptDot(char* str);
 void add_selector(char* selector, int line);
-void add_property(char* property, int line, int total_selectors_stat, int child_of);
+void add_property(char* property, int line, int total_selectors_counter, int child_of);
 %}
 %locations
 %union{
-    int total_selectors_stat;
-    int element_stat;
-    int class_stat;
-    int subclass_stat;
-    int id_stat;
-    int pseudoclass_stat;
-    int nested_stat;
-    int comment_stat;
-    int prop_val_txt_stat;
-    int prop_val_px_stat;
-    int prop_val_perc_stat;
-    int prop_val_html_stat;
-    int empty_selector_stat;
+    int total_selectors_counter;
+    int element_counter;
+    int class_counter;
+    int subclass_counter;
+    int id_counter;
+    int pseudoelement_counter;
+    int pseudoclass_counter;
+    int nested_counter;
+    int comment_counter;
+    int prop_val_txt_counter;
+    int prop_val_px_counter;
+    int prop_val_perc_counter;
+    int prop_val_html_counter;
+    int empty_selector_counter;
     char* string;
     /* Array de */
 }
@@ -97,35 +98,50 @@ selectors:
 selector_name: 
     STANDARD_NAME   
         { /* Añadir a lista de elementos modificados */
-        char* aux=$1;
-        add_selector(aux, yylineno);
+            char* aux=$1;
+            yyval.total_selectors_counter++;
+            yyval.element_counter++;
+            add_selector(aux, yylineno);
         }
     | CLASS
         { /* Añadir a clases modificadas */         
             char* aux=$1;
+            yyval.total_selectors_counter++;
+            yyval.class_counter++;
             add_selector(aux, yylineno);
         }
     | SUBCLASS  
         { /* Añadir a subclases modificadas */ 
             char* aux=$1;
+            yyval.total_selectors_counter++;
+            yyval.subclass_counter++;
             add_selector(aux, yylineno);
         }
     | HASH STANDARD_NAME        
         { /* Añadir a id's modificados */ 
             char* aux=$2;
+            yyval.total_selectors_counter++;
+            yyval.nested_counter++;
             add_selector(strcat("#",aux), yylineno);
         }
     | PSEUDOCLASS   
         { /* Añadir a pseudoclases modificadas */
             char* aux=$1;
+            yyval.total_selectors_counter++;
+            yyval.pseudoclass_counter++;
             add_selector(aux, yylineno);
         }
     | PSEUDOELEMENT 
         { /* Añadir a pseudoelementos modificados */
             char* aux=$1;
+            yyval.total_selectors_counter++;
+            yyval.pseudoelement_counter++;
             add_selector(aux, yylineno);
         }
-    | NESTED_ELEMENT { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/ }
+    | NESTED_ELEMENT 
+        { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/
+        yyval.total_selectors_counter++;
+        yyval.pseudoelement_counter++; }
 
 declarations: declarations property
     | /* vacio */
@@ -151,9 +167,13 @@ property:
 
 property_value:
     | STANDARD_NAME
+        { yyval.prop_val_txt_counter++; }
     | VALUE_PX
+        { yyval.prop_val_px_counter++; }
     | VALUE_PERCENTAGE
+        { yyval.prop_val_perc_counter++; }
     | HASH STANDARD_NUM
+        { yyval.prop_val_html_counter++; }
 
 %%
 
@@ -241,13 +261,13 @@ Property_Map_Info* create_property_info(char* property, int line, int child_of) 
    3. Si existe colision, sino es igual crea un nuevo nodo siguiente al que esta analizando. 
    Ademas si se da el caso de que hemos avanzado a otro selector, en caso de que haya colisiones se
    sobreescriben los datos almacenados.*/
-void add_property(char* property, int line, int total_selectors_stat, int child_of) {
+void add_property(char* property, int line, int total_selectors_counter, int child_of) {
     unsigned int h = hash(property);
     Property_Map_Node* node = properties_hash_map[h];
 
     while (node != NULL) {
         // Si ya existe el mismo property.
-        if (strcmp(node->data->property, property) == 0 && total_selectors_stat==child_of) {
+        if (strcmp(node->data->property, property) == 0 && total_selectors_counter==child_of) {
             node->data->frequency++;
             node->data->num_lines++;
             node->data->lines = (int*) realloc(node->data->lines, node->data->num_lines * sizeof(int));
