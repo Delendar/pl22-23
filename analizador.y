@@ -182,29 +182,35 @@ void add_property(char* property, int line, int total_selectors_stat, int child_
     properties_hash_map[h] = node;
 }
 
-void add_string(char** strings, int* strings_size, const char* new_string) {
-    if (*strings_size >= BASE_STORED_TAGS_SIZE) {
-        strings = realloc(strings, (*strings_size + 1) *sizeof(char*));
+// Libera memoria de hash maps asociadas a los selectores
+void free_hash_map(Selector_Map_Node** hash_map) {
+    for (int i = 0; i < HASHMAP_SIZE; i++) {
+        Selector_Map_Node* node = hash_map[i];
+        while (node != NULL) {
+            free(node->data->selector);
+            free(node->data->lines);
+            free(node->data);
+            Selector_Map_Node* next_node = node->next;
+            free(node);
+            node = next_node;
+        }
     }
-    strings[*strings_size] = malloc(strlen(new_string)+1);
-    strcpy(strings[*strings_size], new_string);
-    *strings_size += 1;
+    free(hash_map);
 }
 
-void remove_string(char*** strings, int* strings_size) {
-    if (*strings_size > 0) {
-        (*strings_size)--;
-        free((*strings)[*strings_size]);
-        (*strings)[*strings_size] = NULL;
+void free_hash_map(Property_Map_Node** hash_map) {
+    for (int i = 0; i < HASHMAP_SIZE; i++) {
+        Property_Map_Node* node = hash_map[i];
+        while (node != NULL) {
+            free(node->data->property);
+            free(node->data->lines);
+            free(node->data);
+            Property_Map_Node* next_node = node->next;
+            free(node);
+            node = next_node;
+        }
     }
-}
-
-void free_strings(char** strings, int* strings_size) {
-    for(int i=0; i < *strings_size; i++){
-        free(strings[i]);
-    }
-    free(strings);
-    free(strings_size);
+    free(hash_map);
 }
 
 /*CODE*/
