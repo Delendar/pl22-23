@@ -221,6 +221,53 @@ void free_hash_map(Property_Map_Node** hash_map) {
     free(hash_map);
 }
 
+void analyze_selectors_hash_map(Selector_Map_Node** hash_map) {
+    for (int i = 0; i < HASHMAP_SIZE; i++) {
+        Selector_Map_Node* node = hash_map[i];
+        while (node != NULL) {
+            Selector_Map_Info* data = node->data;
+            printf("Selector: %s\n", data->selector);
+            printf("Frequency: %d\n", data->frequency);
+            printf("Lines: ");
+            for (int j = 0; j < data->num_lines; j++) {
+                printf("%d ", data->lines[j]);
+            }
+            printf("\n");
+
+            /*
+            Warnings
+            */
+
+            node = node->next;
+        }
+    }
+}
+
+void analyze_properties_hash_map(Property_Map_Node** hash_map) {
+    for (int i = 0; i < HASHMAP_SIZE; i++) {
+        Property_Map_Node* node = hash_map[i];
+        while (node != NULL) {
+            Property_Map_Info* data = node->data;
+            printf("Property: %s\n", data->property);
+            printf("Frequency: %d\n", data->frequency);
+            printf("Lines: ");
+            for (int j = 0; j < data->num_lines; j++) {
+                printf("%d ", data->lines[j]);
+            }
+            printf("\n");
+
+            /*
+            Warnings
+            */
+
+            node = node->next;
+        }
+    }
+}
+
+These functions iterate over each element in the hash map, and for each node in the chain, print the data contained in the corresponding structure. Note that these functions assume that the selector, property, and lines fields in each data structure were allocated using malloc() or a similar memory allocation function, and that the num_lines field specifies the length of the lines array. If the memory was allocated using a different method, or the lines array has a different length specification, you may need to modify the print statements accordingly.
+
+
 /*CODE*/
 int main(){
     yylval.linea=0;
