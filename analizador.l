@@ -2,6 +2,8 @@
 %{
 #include <stdio.h>
 #include "analizador.tab.h"
+
+int count_newlines(const char*);
 %}
 %option yylineno
 
@@ -121,5 +123,5 @@ int count_newlines(const char* string) {
 }
 
 void yyerror (char const *message) { 
-    fprintf (stderr, "%s {%d} [%d]\n", message, yylineno, lines);
+    fprintf (stderr, "%s {%d}\n", message, yylineno);
 }

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HASHMAP_SIZE 100
+#define HASH_MAP_SIZE 100
 
 typedef struct Selector_Map_Info {
     char* selector;
@@ -14,7 +14,7 @@ typedef struct Selector_Map_Info {
 } Selector_Map_Info;
 
 typedef struct Selector_Map_Node {
-    Selector_Info* data;
+    Selector_Map_Info* data;
     struct Selector_Map_Node* next;
 } Selector_Map_Node;
 
@@ -27,12 +27,12 @@ typedef struct Property_Map_Info {
 } Property_Map_Info;
 
 typedef struct Property_Map_Node {
-    Property_Info* data;
+    Property_Map_Info* data;
     struct Property_Map_Node* next;
 } Property_Map_Node;
 
-Selector_Map_Node* selectors_hash_map[HASHMAP_SIZE];
-Property_Map_Node* properties_hash_map[HASHMAP_SIZE];
+Selector_Map_Node* selectors_hash_map[HASH_MAP_SIZE];
+Property_Map_Node* properties_hash_map[HASH_MAP_SIZE];
 
 extern int yylex (void);
 extern int yylineno;
@@ -111,7 +111,7 @@ unsigned int hash(char* str) {
     while ((c = *str++))
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-    return hash % HASH_SIZE;
+    return hash % HASH_MAP_SIZE;
 }
 
 Selector_Map_Info* create_selector_info(char* selector, int line) {
@@ -127,7 +127,7 @@ Selector_Map_Info* create_selector_info(char* selector, int line) {
 
 void add_selector(char* selector, int line) {
     unsigned int h = hash(selector);
-    Selector_Map_Node* node = hash_table[h];
+    Selector_Map_Node* node = selectors_hash_map[h];
 
     while (node != NULL) {
         // Si ya existe el mismo selector.
@@ -150,7 +150,7 @@ void add_selector(char* selector, int line) {
 
 Property_Map_Info* create_property_info(char* property, int line, int child_of) {
     Property_Map_Info* pmi = (Property_Map_Info*) malloc(sizeof(Property_Map_Info));
-    pmi->selector = strdup(property);
+    pmi->property = strdup(property);
     pmi->frequency = 1;
     pmi->num_lines = 1;
     pmi->lines = (int*) malloc(sizeof(int));
@@ -162,7 +162,7 @@ Property_Map_Info* create_property_info(char* property, int line, int child_of) 
 
 void add_property(char* property, int line, int total_selectors_stat, int child_of) {
     unsigned int h = hash(property);
-    Property_Map_Node* node = hash_table[h];
+    Property_Map_Node* node = properties_hash_map[h];
 
     while (node != NULL) {
         // Si ya existe el mismo property.
@@ -183,16 +183,16 @@ void add_property(char* property, int line, int total_selectors_stat, int child_
         node = node->next;
     }
 
-    Property_Map_Info* pmi = create_selector_info(selector, line);
-    node = (Property_Map_Node*) malloc(sizeof(Node));
+    Property_Map_Info* pmi = create_property_info(property, line, child_of);
+    node = (Property_Map_Node*) malloc(sizeof(Property_Map_Node));
     node->data = pmi;
     node->next = properties_hash_map[h];
     properties_hash_map[h] = node;
 }
 
 // Libera memoria de hash maps asociadas a los selectores
-void free_hash_map(Selector_Map_Node** hash_map) {
-    for (int i = 0; i < HASHMAP_SIZE; i++) {
+void free_selectors_hash_map(Selector_Map_Node** hash_map) {
+    for (int i = 0; i < HASH_MAP_SIZE; i++) {
         Selector_Map_Node* node = hash_map[i];
         while (node != NULL) {
             free(node->data->selector);
@@ -206,8 +206,8 @@ void free_hash_map(Selector_Map_Node** hash_map) {
     free(hash_map);
 }
 
-void free_hash_map(Property_Map_Node** hash_map) {
-    for (int i = 0; i < HASHMAP_SIZE; i++) {
+void free_property_hash_map(Property_Map_Node** hash_map) {
+    for (int i = 0; i < HASH_MAP_SIZE; i++) {
         Property_Map_Node* node = hash_map[i];
         while (node != NULL) {
             free(node->data->property);
@@ -222,7 +222,7 @@ void free_hash_map(Property_Map_Node** hash_map) {
 }
 
 void analyze_selectors_hash_map(Selector_Map_Node** hash_map) {
-    for (int i = 0; i < HASHMAP_SIZE; i++) {
+    for (int i = 0; i < HASH_MAP_SIZE; i++) {
         Selector_Map_Node* node = hash_map[i];
         while (node != NULL) {
             Selector_Map_Info* data = node->data;
@@ -244,7 +244,7 @@ void analyze_selectors_hash_map(Selector_Map_Node** hash_map) {
 }
 
 void analyze_properties_hash_map(Property_Map_Node** hash_map) {
-    for (int i = 0; i < HASHMAP_SIZE; i++) {
+    for (int i = 0; i < HASH_MAP_SIZE; i++) {
         Property_Map_Node* node = hash_map[i];
         while (node != NULL) {
             Property_Map_Info* data = node->data;
@@ -268,7 +268,6 @@ void analyze_properties_hash_map(Property_Map_Node** hash_map) {
 
 /*CODE*/
 int main(){
-    yylval.linea=0;
     extern FILE *yyin;
     yyin=stdin;
     if(yyin == NULL){
