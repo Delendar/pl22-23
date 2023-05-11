@@ -155,7 +155,7 @@ void removeSpacesExceptDot(char* str) {
     int i, j;
 
     for (i = 0, j = 0; i < len; i++) {
-        if (str[i] == ' ' && str[i + 1] != '.') {
+        if ((str[i] == ' ' && str[i + 1] != '.') || str[i] == '\n') {
             continue;
         }
         str[j] = str[i];
