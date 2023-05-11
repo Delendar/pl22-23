@@ -37,7 +37,7 @@ Property_Map_Node* properties_hash_map[HASH_MAP_SIZE];
 extern int yylex (void);
 extern int yylineno;
 void yyerror (char const *);
-void removeSpacesExceptDot(char* str);
+void sanitize_nested_element(char* string);
 void add_selector(char* selector, int line);
 void add_property(char* property, int line, int total_selectors_counter, int child_of);
 %}
@@ -140,8 +140,12 @@ selector_name:
         }
     | NESTED_ELEMENT 
         { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/
-        yyval.total_selectors_counter++;
-        yyval.pseudoelement_counter++; }
+            char* aux = $1;
+            yyval.total_selectors_counter++;
+            yyval.pseudoelement_counter++;
+            sanitize_nested_element(aux);
+            add_selector(aux, yylineno);
+        }
 
 declarations: declarations property
     | /* vacio */
@@ -189,7 +193,7 @@ unsigned int hash(char* str) {
 }
 
 /* Función para eliminar los espacios excepto si van seguidos de un punto dentro de un string*/
-void removeSpacesExceptDot(char* str) {
+void sanitize_nested_element(char* str) {
     int len = strlen(str);
     int i, j;
 
