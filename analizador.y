@@ -64,14 +64,22 @@ void yyerror (char const *);
 /*RULES*/
 css : css style_modifier | /* vacio */
 
-style_modifier: selectors SELECTOR_START declarations SELECTOR_END
-            { /* is_new_selector = true */}
+style_modifier: 
+    | selectors SELECTOR_START declarations SELECTOR_END
+    | SELECTOR_START declarations SELECTOR_END 
+        { /* Error: Falta selector al que aplicar definiciones. */ }
+    | selectors SELECTOR_START declarations
+        { /* Error: se esperaba cierre de definiciones de selector '}'. */ }
+    | selectors declarations SELECTOR_END
+        { /* Error: se esperaba apertura de definiciones de selector '{'. */ }
 
 selectors: 
       /* Selector normal. */
       selector_name
       /* Selectores múltiples. */
     | selectors COMMA selector_name
+    | error 
+        { /* Error: selector mal definido. */ }
 
 selector_name: 
     | ELEMENT   { /* Añadir a lista de elementos modificados */ }
