@@ -121,7 +121,3 @@ int count_newlines(const char* string) {
     }
     return count;
 }
-
-void yyerror (char const *message) { 
-    fprintf (stderr, "%s {%d}\n", message, yylineno);
-}

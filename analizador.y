@@ -94,7 +94,7 @@ declarations: declarations property
     | /* vacio */
 
 property: PROP_NAME property_value 
-                { /*  */}
+                { /*  */ }
 
 property_value:
     | VALUE_TXT
@@ -281,6 +281,9 @@ void analyze_properties_hash_map(Property_Map_Node** hash_map) {
     }
 }
 
+void yyerror (char const *message) { 
+    fprintf (stderr, "%s {%d}\n", message, yylineno);
+}
 
 /*CODE*/
 int main(){
