@@ -56,20 +56,21 @@ void add_property(char* property, int line, int total_selectors_stat, int child_
     int prop_val_perc_stat;
     int prop_val_html_stat;
     int empty_selector_stat;
-    char *string;
+    char* string;
     /* Array de */
 }
 /*TOKENS*/
-%token SELECTOR_START SELECTOR_END COMMA
-%token <string> ELEMENT ID CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
-%token PROP_NAME VALUE_TXT VALUE_PX VALUE_PERCENTAGE VALUE_HTML_COLOR
+%token SELECTOR_START SELECTOR_END COMMA COLON SEMICOLON HASH
+%token <string> STANDARD_NAME STANDARD_NUM CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
+%token VALUE_PX VALUE_PERCENTAGE
+%type <string> selector_name
 %start css
 %%
 /*RULES*/
 css : css style_modifier | /* vacio */
 
 style_modifier: 
-    | selectors SELECTOR_START declarations SELECTOR_END
+    selectors SELECTOR_START declarations SELECTOR_END
     | SELECTOR_START declarations SELECTOR_END 
         { /* Error: Falta selector al que aplicar definiciones. */
         yyerror("Error sintactico: falta selector al que aplicar modificaciones de estilo, linea "); 
@@ -94,49 +95,65 @@ selectors:
         YYABORT; }
 
 selector_name: 
-    | ELEMENT   { /* Añadir a lista de elementos modificados */ 
+    STANDARD_NAME   
+        { /* Añadir a lista de elementos modificados */
         char* aux=$1;
-        removeSpaces(aux);
         add_selector(aux, yylineno);
-    }
-    | CLASS     { /* Añadir a clases modificadas */         
-        char* aux=$1;
-        removeSpaces(aux);
-        add_selector(aux, yylineno);
-    }
-    | SUBCLASS  { /* Añadir a subclases modificadas */ 
-        char* aux=$1;
-        removeSpaces(aux);
-        add_selector(aux, yylineno);
-    }
-    | ID        { /* Añadir a id's modificados */ 
-        char* aux=$1;
-        removeSpaces(aux);
-        add_selector(aux, yylineno);
-    }
-    | PSEUDOCLASS   { /* Añadir a pseudoclases modificadas */
-        char* aux=$1;
-        removeSpaces(aux);
-        add_selector(aux, yylineno);
-    }
-    | PSEUDOELEMENT { /* Añadir a pseudoelementos modificados */
-        char* aux=$1;
-        removeSpaces(aux);
-        add_selector(aux, yylineno);
-    }
+        }
+    | CLASS
+        { /* Añadir a clases modificadas */         
+            char* aux=$1;
+            add_selector(aux, yylineno);
+        }
+    | SUBCLASS  
+        { /* Añadir a subclases modificadas */ 
+            char* aux=$1;
+            add_selector(aux, yylineno);
+        }
+    | HASH STANDARD_NAME        
+        { /* Añadir a id's modificados */ 
+            char* aux=$2;
+            add_selector(strcat("#",aux), yylineno);
+        }
+    | PSEUDOCLASS   
+        { /* Añadir a pseudoclases modificadas */
+            char* aux=$1;
+            add_selector(aux, yylineno);
+        }
+    | PSEUDOELEMENT 
+        { /* Añadir a pseudoelementos modificados */
+            char* aux=$1;
+            add_selector(aux, yylineno);
+        }
     | NESTED_ELEMENT { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/ }
 
 declarations: declarations property
     | /* vacio */
 
-property: PROP_NAME property_value 
-                { /*  */ }
+property:
+    STANDARD_NAME COLON property_value SEMICOLON
+    | COLON property_value SEMICOLON
+        { /* Error: se esperaba nombre para la propiedad. */ 
+        yyerror("Error sintactico: se esperaba nombre para la propiedad, linea "); 
+        YYABORT; }
+    | STANDARD_NAME COLON SEMICOLON
+        { /* Error: se esperaba valor para propiedad. */ 
+        yyerror("Error sintactico: se esperaba valor para propiedad, linea "); 
+        YYABORT; }
+    | STANDARD_NAME property_value SEMICOLON
+        { /* Error: se esperaba indicador de fin de nombre de propiedad. */ 
+        yyerror("Error sintactico: se esperaba indicador de fin de nombre de propiedad ':', linea "); 
+        YYABORT; }
+    | STANDARD_NAME COLON property_value
+        { /* Error: se esperaba indicador de fin de valor de propiedad. */ 
+        yyerror("Error sintactico: se esperaba indicador de fin de valor de propiedad ';', linea "); 
+        YYABORT; }
 
 property_value:
-    | VALUE_TXT
+    | STANDARD_NAME
     | VALUE_PX
     | VALUE_PERCENTAGE
-    | VALUE_HTML_COLOR
+    | HASH STANDARD_NUM
 
 %%
 
@@ -344,5 +361,6 @@ int main(){
         yyparse();
         fclose(yyin);
     }
+    analyze_selectors_hash_map(selectors_hash_map);
     return 0;
 }
