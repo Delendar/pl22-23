@@ -37,7 +37,6 @@ Property_Map_Node* properties_hash_map[HASH_MAP_SIZE];
 extern int yylex (void);
 extern int yylineno;
 void yyerror (char const *);
-void removeSpaces(char* str);
 void removeSpacesExceptDot(char* str);
 void add_selector(char* selector, int line);
 void add_property(char* property, int line, int total_selectors_stat, int child_of);
@@ -148,17 +147,6 @@ unsigned int hash(char* str) {
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
     return hash % HASH_MAP_SIZE;
-}
-
-/* Función para eliminar los espacios dentro de un string*/
-void removeSpaces(char* str) {
-    int i, j;
-    for (i = 0, j = 0; str[i] != '\0'; i++) {
-        if (str[i] != ' ') {
-            str[j++] = str[i];
-        }
-    }
-    str[j] = '\0';
 }
 
 /* Función para eliminar los espacios excepto si van seguidos de un punto dentro de un string*/
