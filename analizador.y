@@ -104,6 +104,7 @@ property_value:
 
 %%
 
+/* Funcion de hash */
 unsigned int hash(char* str) {
     unsigned int hash = 5381;
     int c;
@@ -114,6 +115,7 @@ unsigned int hash(char* str) {
     return hash % HASH_MAP_SIZE;
 }
 
+/* Creador de contenedor de informacion de un nodo */
 Selector_Map_Info* create_selector_info(char* selector, int line) {
     Selector_Map_Info* smi = (Selector_Map_Info*) malloc(sizeof(Selector_Map_Info));
     smi->selector = strdup(selector);
@@ -125,6 +127,10 @@ Selector_Map_Info* create_selector_info(char* selector, int line) {
     return smi;
 }
 
+/* Gestion de adicion de un selector al hashmap.
+   1. Si no existe colision anade.
+   2. Si existe colision, si es igual al almacenado aumenta la frecuencia de aparicion del selector.
+   3. Si existe colision, sino es igual crea un nuevo nodo siguiente al que esta analizando. */
 void add_selector(char* selector, int line) {
     unsigned int h = hash(selector);
     Selector_Map_Node* node = selectors_hash_map[h];
@@ -148,6 +154,7 @@ void add_selector(char* selector, int line) {
     selectors_hash_map[h] = node;
 }
 
+/* Creador de contenedor de informacion de un nodo de propiedades */
 Property_Map_Info* create_property_info(char* property, int line, int child_of) {
     Property_Map_Info* pmi = (Property_Map_Info*) malloc(sizeof(Property_Map_Info));
     pmi->property = strdup(property);
@@ -160,6 +167,12 @@ Property_Map_Info* create_property_info(char* property, int line, int child_of) 
     return pmi;
 }
 
+/* Gestion de adicion de una propiedad al hashmap.
+   1. Si no existe colision anade.
+   2. Si existe colision, si es igual al almacenado aumenta la frecuencia de aparicion del selector.
+   3. Si existe colision, sino es igual crea un nuevo nodo siguiente al que esta analizando. 
+   Ademas si se da el caso de que hemos avanzado a otro selector, en caso de que haya colisiones se
+   sobreescriben los datos almacenados.*/
 void add_property(char* property, int line, int total_selectors_stat, int child_of) {
     unsigned int h = hash(property);
     Property_Map_Node* node = properties_hash_map[h];
@@ -206,6 +219,7 @@ void free_selectors_hash_map(Selector_Map_Node** hash_map) {
     free(hash_map);
 }
 
+// Libera memoria de hash maps asociadas a las propiedades
 void free_property_hash_map(Property_Map_Node** hash_map) {
     for (int i = 0; i < HASH_MAP_SIZE; i++) {
         Property_Map_Node* node = hash_map[i];
@@ -221,6 +235,7 @@ void free_property_hash_map(Property_Map_Node** hash_map) {
     free(hash_map);
 }
 
+// Recorre el hashmap de selectores
 void analyze_selectors_hash_map(Selector_Map_Node** hash_map) {
     for (int i = 0; i < HASH_MAP_SIZE; i++) {
         Selector_Map_Node* node = hash_map[i];
@@ -243,6 +258,7 @@ void analyze_selectors_hash_map(Selector_Map_Node** hash_map) {
     }
 }
 
+// Recorre el hashmap de propiedades
 void analyze_properties_hash_map(Property_Map_Node** hash_map) {
     for (int i = 0; i < HASH_MAP_SIZE; i++) {
         Property_Map_Node* node = hash_map[i];
