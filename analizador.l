@@ -2,8 +2,6 @@
 %{
 #include <stdio.h>
 #include "analizador.tab.h"
-
-int count_newlines(const char*);
 %}
 %option yylineno
 
@@ -63,15 +61,3 @@ prop_value_px        {std_num}"px"
 {prop_value_px}         { return VALUE_PX; }
 
 {eol} {  }
-%%
-
-int count_newlines(const char* string) {
-    int count = 0;
-    while (*string) {
-        if (*string == '\n') {
-            count++;
-        }
-        string++;
-    }
-    return count;
-}
