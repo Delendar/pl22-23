@@ -38,6 +38,7 @@ extern int yylex (void);
 extern int yylineno;
 void yyerror (char const *);
 void removeSpaces(char* str);
+void removeSpacesExceptDot(char* str);
 void add_selector(char* selector, int line);
 void add_property(char* property, int line, int total_selectors_stat, int child_of);
 %}
@@ -124,7 +125,11 @@ selector_name:
         removeSpaces(aux);
         add_selector(aux, yylineno);
     }
-    | NESTED_ELEMENT { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/ }
+    | NESTED_ELEMENT { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/ 
+        char* aux=$1;
+        removeSpaces(aux);
+        add_selector(aux, yylineno);
+    }
 
 declarations: declarations property
     | /* vacio */
@@ -158,6 +163,21 @@ void removeSpaces(char* str) {
         if (str[i] != ' ') {
             str[j++] = str[i];
         }
+    }
+    str[j] = '\0';
+}
+
+/* Función para eliminar los espacios excepto si van seguidos de un punto dentro de un string*/
+void removeSpacesExceptDot(char* str) {
+    int len = strlen(str);
+    int i, j;
+
+    for (i = 0, j = 0; i < len; i++) {
+        if (str[i] == ' ' && str[i + 1] != '.') {
+            continue;
+        }
+        str[j] = str[i];
+        j++;
     }
     str[j] = '\0';
 }
