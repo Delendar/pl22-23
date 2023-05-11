@@ -10,7 +10,6 @@ int count_newlines(const char*);
 lkey "{"
 rkey "}"
 comma ,
-spaces [ \t]
 eol \n
 ws [ \t\n]
 colon :
@@ -65,11 +64,6 @@ prop_value_px        {std_num}"px"
 
 {eol} {  }
 %%
-
-/*int main() {
-    yylex();
-    return 0;
-} */
 
 int count_newlines(const char* string) {
     int count = 0;
