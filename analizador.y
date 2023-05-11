@@ -56,9 +56,9 @@ void yyerror (char const *);
     /* Array de */
 }
 /*TOKENS*/
-%token SELECTOR_START SELECTOR_END COMMA
-%token ELEMENT ID CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
-%token PROP_NAME VALUE_TXT VALUE_PX VALUE_PERCENTAGE VALUE_HTML_COLOR
+%token SELECTOR_START SELECTOR_END COMMA COLON SEMICOLON HASH
+%token STANDARD_NAME STANDARD_NUM CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
+%token VALUE_PX VALUE_PERCENTAGE
 %start css
 %%
 /*RULES*/
@@ -90,10 +90,10 @@ selectors:
         YYABORT; }
 
 selector_name: 
-    | ELEMENT   { /* Añadir a lista de elementos modificados */ }
+    | STANDARD_NAME   { /* Añadir a lista de elementos modificados */ }
     | CLASS     { /* Añadir a clases modificadas */ }
     | SUBCLASS  { /* Añadir a subclases modificadas */ }
-    | ID        { /* Añadir a id's modificados */ }
+    | HASH STANDARD_NAME        { /* Añadir a id's modificados */ }
     | PSEUDOCLASS   { /* Añadir a pseudoclases modificadas */ }
     | PSEUDOELEMENT { /* Añadir a pseudoelementos modificados */ }
     | NESTED_ELEMENT { /* Añadir a elementos anidados modificados */ }
@@ -101,14 +101,30 @@ selector_name:
 declarations: declarations property
     | /* vacio */
 
-property: PROP_NAME property_value 
-                { /*  */ }
+property:
+    | STANDARD_NAME COLON property_value SEMICOLON
+    | COLON property_value SEMICOLON
+        { /* Error: se esperaba nombre para la propiedad. */ 
+        yyerror("Error sintactico: se esperaba nombre para la propiedad, linea "); 
+        YYABORT; }
+    | STANDARD_NAME COLON SEMICOLON
+        { /* Error: se esperaba valor para propiedad. */ 
+        yyerror("Error sintactico: se esperaba valor para propiedad, linea "); 
+        YYABORT; }
+    | STANDARD_NAME property_value SEMICOLON
+        { /* Error: se esperaba indicador de fin de nombre de propiedad. */ 
+        yyerror("Error sintactico: se esperaba indicador de fin de nombre de propiedad ':', linea "); 
+        YYABORT; }
+    | STANDARD_NAME COLON property_value
+        { /* Error: se esperaba indicador de fin de valor de propiedad. */ 
+        yyerror("Error sintactico: se esperaba indicador de fin de valor de propiedad ';', linea "); 
+        YYABORT; }
 
 property_value:
-    | VALUE_TXT
+    | STANDARD_NAME
     | VALUE_PX
     | VALUE_PERCENTAGE
-    | VALUE_HTML_COLOR
+    | HASH STANDARD_NUM
 
 %%
 
