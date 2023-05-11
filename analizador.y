@@ -67,11 +67,17 @@ css : css style_modifier | /* vacio */
 style_modifier: 
     | selectors SELECTOR_START declarations SELECTOR_END
     | SELECTOR_START declarations SELECTOR_END 
-        { /* Error: Falta selector al que aplicar definiciones. */ }
+        { /* Error: Falta selector al que aplicar definiciones. */
+        yyerror("Error sintactico: falta selector al que aplicar modificaciones de estilo, linea "); 
+        YYABORT; }
     | selectors SELECTOR_START declarations
-        { /* Error: se esperaba cierre de definiciones de selector '}'. */ }
+        { /* Error: se esperaba cierre de definiciones de selector '}'. */ 
+        yyerror("Error sintactico: se esperaba final de modificaciones de estilo de un selector '}', linea "); 
+        YYABORT; }
     | selectors declarations SELECTOR_END
-        { /* Error: se esperaba apertura de definiciones de selector '{'. */ }
+        { /* Error: se esperaba apertura de definiciones de selector '{'. */ 
+        yyerror("Error sintactico: se esperaba inicio de modificaciones de estilo de un selector '{', linea "); 
+        YYABORT; }
 
 selectors: 
       /* Selector normal. */
@@ -79,7 +85,9 @@ selectors:
       /* Selectores múltiples. */
     | selectors COMMA selector_name
     | error 
-        { /* Error: selector mal definido. */ }
+        { /* Error: selector mal definido. */ 
+        yyerror("Error sintactico: se encontro un error en la definicion del nombre/nombres de selector, linea "); 
+        YYABORT; }
 
 selector_name: 
     | ELEMENT   { /* Añadir a lista de elementos modificados */ }
