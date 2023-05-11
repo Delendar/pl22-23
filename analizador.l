@@ -15,6 +15,7 @@ ws [ \t\n]
 /* Simplificadores de expresiones. */
 std_name [a-zA-Z][a-zA-Z0-9-]*
 std_num  [0-9]*
+comment "/*"[^*/]*"*/"
 
 /* Reconocedores de selectores. */
 element      {std_name}
@@ -25,8 +26,7 @@ pseudoclass  {std_name}":"{std_name}
 pseudoelement {std_name}"::"{std_name}
 
 
-/* Esto debe de reconocerlo la gramática.
-    NE_HEAD whitespaces NE_TAIL */
+/* Esto debe de reconocerlo la gramática. NE_HEAD whitespaces NE_TAIL */
 nested_element_head {element}|{class}|{subclass}
 nested_element_tail {class}|{subclass}
 nested_element      {nested_element_head}{spaces}+{nested_element_tail}
@@ -53,7 +53,7 @@ prop_value_html_weol "#"{std_num}{ws}*";"
         return SELECTOR_START; }
 {rkey}  { printf(" SE "); 
         return SELECTOR_END; }
-"/*"[^*/]*"*/"  { yylineno += count_newlines(yytext);}
+{comment}  { yylineno += count_newlines(yytext);}
 
 {element}       { printf("\nelement");  
                 return ELEMENT; }

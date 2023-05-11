@@ -1,0 +1,96 @@
+##################################################################################
+##################################################################################
+			##### PRÁCTICA FINAL #####
+			ANALIZADOR DE FICHEROS CSS
+		Alan Xes López Fernández y Iván Pérez Longa
+##################################################################################
+INDICE
+1.) INTRODUCCIÓN
+2.) MANUAL DE USUARIO
+3.) MANUAL TÉCNICO
+	3.1) ANALIZADOR LÉXICO
+	3.2) ANALIZADOR SINTÁCTICO
+4.) TRABAJO A FUTURO
+5.) INCIDENTES
+6.) CONCLUSIÓN		
+##################################################################################
+1.) INTRODUCCIÓN
+
+Este archivo documenta el desarrollo del proyecto llevado a cabo por Alan e Iván.
+Este proyecto consiste en la creación de un analizador de ficheros CSS. Así pues,
+nuestro código es capaz de reconocer la sintaxis de este lenguaje y actuar en
+consecuencia. Como se puede ver en el apartado anterior, esta memoria está
+dividida en seis partes: una introducción, un manual de usuario donde se detallan
+los pasos para ejecutar el código y otros detalles de interés, un manual técnico,
+donde se explica un poco más en profundidad el código en sí, y para rematar, los
+apartados de trabajo a futuro, incidentes y conclusión.
+##################################################################################
+2.) MANUAL DE USUARIO
+
+Para facilitar la ejecución de nuestro código se ha creado un fichero makefile,
+así como un archivo de ejemplo ("prueba.css") con el que testar el correcto 
+funcionamiento del programa.
+
+Para ser ejecutado, basta con escribir en un terminal las siguientes instrucciones:
+				make
+##################################################################################
+3.) MANUAL TÉCNICO
+
+Este apartado se ha divido en dos subcategorías, donde se entrará un poco más en
+detalle de la implementación del código en sí.
+
+3.1) ANALIZADOR LÉXICO
+
+En este sección, explicaremos el archivo "analizador.l". De todas maneras, cabe
+resaltar que se han hecho numerosos comentarios en el código para facilitar así
+su lectura. En primer lugar, en la sección de declaraciones, todas las 
+definiciones estan acompañadas de un nombre bastante clarificativo. Destacar el
+manejo de los espacios y saltos de linea ("ws"). Nos decidimos por reconocerlos
+en nuestro analizador léxico para tener una gramática más sencilla.
+
+Nuestra sección de reglas es de sencilla comprensión ya que la mayoría de las 
+definiciones devuelven al analizador sintáctico un token con su nombre. En algunos
+casos sensibles, como "nested_element_weol" o "prop_name_weol" entre otros, se 
+llama a la función "count_newlines". Esta se explicará en el parrafo siguiente en
+la sección de código.
+
+En esta última sección, resaltar la función "count_newlines" que tal y como su
+nombre indica escanea un string para saber si en el se haya el caracter '\n'. 
+Esta función es útil para poder printear en pantalla la línea en la que se
+comente un error sintáctico, por ejemplo.
+
+3.2) ANALIZADOR SINTÁCTICO
+
+En este apartado, nos centramos en el archivo "analizador.y". Cabe destacar que al
+igual que con "analizador.l", creemos que el código esta bien comentado, y las 
+variables y funciones tienen nombres claros para facilitar su comprensión.
+
+En la sección de reglas gramaticales ...
+
+Por último, en el apartado de cógido, destacar ...
+##################################################################################
+4.) TRABAJO A FUTURO
+
+Una de las características que más nos atrajo de la idea de hacer esta práctica 
+es que tiene tantos niveles de complejidad como se precise darle. Actualmente,
+el programa sirve como analizador de estadísticas de un archivo CSS, pero dado que
+nuestro código es capaz de reconocer la sintaxis propia de este lenguaje, podría
+tener multiples utilidades, según lo que se quisiera medir. Como ejemplo de esto, 
+con un par de ajustes podríamos ver que el fichero estuviese bien escrito y 
+señalar en que linea no se respeta la sintaxis.
+##################################################################################
+5.) INCIDENTES
+
+En este apartado cabe destacar las diferentes elecciones técnicas con las que
+hemos tenido que lidiar para correcto desarrollo de esta práctica. Entre ellas 
+destacan por ejemplo la problemática con los espacios en blanco o ...
+##################################################################################
+6.) CONCLUSIÓN	
+
+Para rematar, nos gustaría  resaltar nuestra satisfacción con la práctica 
+entregada, habiendo elegido un tema relacionado con la materia vista en las clases
+prácticas pero con un nivel de complejidad y detalle que pudiese aumentar según lo
+requerido. Así pues, estamos contentos con los conocimientos adquiridos, así 
+como con nuestro desempeño en el desarrollo.
+##################################################################################
+##################################################################################
