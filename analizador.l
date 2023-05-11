@@ -34,9 +34,7 @@ pseudoelement {std_name}"::"{std_name}
 /* Esto debe de reconocerlo la gramática. NE_HEAD whitespaces NE_TAIL */
 nested_element_head {element}|{class}|{subclass}
 nested_element_tail {class}|{subclass}
-nested_element      {nested_element_head}{spaces}+{nested_element_tail}
-/* Obtener numero de nuevas lineas */
-nested_element_weol {nested_element_head}{ws}+{nested_element_tail}
+nested_element {nested_element_head}{ws}+{nested_element_tail}
 
 /* Reconocedores de propiedades. */
 prop_value_perc      {std_num}"%"
@@ -59,7 +57,7 @@ prop_value_px        {std_num}"px"
 {subclass}      { yylval.string = strdup(yytext); return SUBCLASS; }
 {pseudoclass}   { yylval.string = strdup(yytext); return PSEUDOCLASS; }
 {pseudoelement} { yylval.string = strdup(yytext); return PSEUDOELEMENT; }
-{nested_element}        { yylval.string = strdup(yytext); return NESTED_ELEMENT; }
+{nested_element}   { yylval.string = strdup(yytext); return NESTED_ELEMENT; }
 
 {prop_value_perc}       { return VALUE_PERCENTAGE; }
 
