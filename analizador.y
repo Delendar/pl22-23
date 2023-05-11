@@ -37,6 +37,9 @@ Property_Map_Node* properties_hash_map[HASH_MAP_SIZE];
 extern int yylex (void);
 extern int yylineno;
 void yyerror (char const *);
+void removeSpaces(char* str);
+void add_selector(char* selector, int line);
+void add_property(char* property, int line, int total_selectors_stat, int child_of);
 %}
 %locations
 %union{
@@ -53,11 +56,12 @@ void yyerror (char const *);
     int prop_val_perc_stat;
     int prop_val_html_stat;
     int empty_selector_stat;
+    char *string;
     /* Array de */
 }
 /*TOKENS*/
 %token SELECTOR_START SELECTOR_END COMMA
-%token ELEMENT ID CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
+%token <string> ELEMENT ID CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
 %token PROP_NAME VALUE_TXT VALUE_PX VALUE_PERCENTAGE VALUE_HTML_COLOR
 %start css
 %%
@@ -67,11 +71,17 @@ css : css style_modifier | /* vacio */
 style_modifier: 
     | selectors SELECTOR_START declarations SELECTOR_END
     | SELECTOR_START declarations SELECTOR_END 
-        { /* Error: Falta selector al que aplicar definiciones. */ }
+        { char error_msg[100];
+          sprintf(error_msg, "Error en línea %d: Falta selector al que aplicar definiciones.", yylineno);
+          yyerror(error_msg); }
     | selectors SELECTOR_START declarations
-        { /* Error: se esperaba cierre de definiciones de selector '}'. */ }
+        { char error_msg[100];
+          sprintf(error_msg, "Error en línea %d: se esperaba cierre de definiciones de selector '}'.",yylineno);
+          yyerror(error_msg); }
     | selectors declarations SELECTOR_END
-        { /* Error: se esperaba apertura de definiciones de selector '{'. */ }
+        { char error_msg[100];
+        sprintf(error_msg, "Error en línea %d: se esperaba apertura de definiciones de selector '{'.",yylineno);
+        yyerror(error_msg); }
 
 selectors: 
       /* Selector normal. */
@@ -79,16 +89,42 @@ selectors:
       /* Selectores múltiples. */
     | selectors COMMA selector_name
     | error 
-        { /* Error: selector mal definido. */ }
+        { char error_msg[100];
+          sprintf(error_msg, "Error en línea %d: selector mal definido. ",yylineno);
+          yyerror(error_msg); }
 
 selector_name: 
-    | ELEMENT   { /* Añadir a lista de elementos modificados */ }
-    | CLASS     { /* Añadir a clases modificadas */ }
-    | SUBCLASS  { /* Añadir a subclases modificadas */ }
-    | ID        { /* Añadir a id's modificados */ }
-    | PSEUDOCLASS   { /* Añadir a pseudoclases modificadas */ }
-    | PSEUDOELEMENT { /* Añadir a pseudoelementos modificados */ }
-    | NESTED_ELEMENT { /* Añadir a elementos anidados modificados */ }
+    | ELEMENT   { /* Añadir a lista de elementos modificados */ 
+        char* aux=$1;
+        removeSpaces(aux);
+        add_selector(aux, yylineno);
+    }
+    | CLASS     { /* Añadir a clases modificadas */         
+        char* aux=$1;
+        removeSpaces(aux);
+        add_selector(aux, yylineno);
+    }
+    | SUBCLASS  { /* Añadir a subclases modificadas */ 
+        char* aux=$1;
+        removeSpaces(aux);
+        add_selector(aux, yylineno);
+    }
+    | ID        { /* Añadir a id's modificados */ 
+        char* aux=$1;
+        removeSpaces(aux);
+        add_selector(aux, yylineno);
+    }
+    | PSEUDOCLASS   { /* Añadir a pseudoclases modificadas */
+        char* aux=$1;
+        removeSpaces(aux);
+        add_selector(aux, yylineno);
+    }
+    | PSEUDOELEMENT { /* Añadir a pseudoelementos modificados */
+        char* aux=$1;
+        removeSpaces(aux);
+        add_selector(aux, yylineno);
+    }
+    | NESTED_ELEMENT { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/ }
 
 declarations: declarations property
     | /* vacio */
@@ -104,7 +140,7 @@ property_value:
 
 %%
 
-/* Funcion de hash */
+/* Función de hash */
 unsigned int hash(char* str) {
     unsigned int hash = 5381;
     int c;
@@ -113,6 +149,17 @@ unsigned int hash(char* str) {
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
     return hash % HASH_MAP_SIZE;
+}
+
+/* Función para eliminar los espacios dentro de un string*/
+void removeSpaces(char* str) {
+    int i, j;
+    for (i = 0, j = 0; str[i] != '\0'; i++) {
+        if (str[i] != ' ') {
+            str[j++] = str[i];
+        }
+    }
+    str[j] = '\0';
 }
 
 /* Creador de contenedor de informacion de un nodo */

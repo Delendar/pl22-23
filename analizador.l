@@ -57,7 +57,8 @@ prop_value_html_weol "#"{std_num}{ws}*";"
         return SELECTOR_END; }
 {comment}  { yylineno += count_newlines(yytext);}
 
-{element}       { printf("\nelement");  
+{element}       { printf("\nelement");
+                yylval.string = strdup(yytext);
                 return ELEMENT; }
 {id}            { printf("\nid");  
                 return ID; }
