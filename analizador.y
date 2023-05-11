@@ -96,7 +96,7 @@ Selector_Info* create_selector_info(char* selector, int line) {
     return si;
 }
 
-void create_node(char* selector, int line) {
+void add_selector(char* selector, int line) {
     unsigned int h = hash(selector);
     Node* node = hash_table[h];
 
