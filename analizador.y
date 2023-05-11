@@ -265,8 +265,6 @@ void analyze_properties_hash_map(Property_Map_Node** hash_map) {
     }
 }
 
-These functions iterate over each element in the hash map, and for each node in the chain, print the data contained in the corresponding structure. Note that these functions assume that the selector, property, and lines fields in each data structure were allocated using malloc() or a similar memory allocation function, and that the num_lines field specifies the length of the lines array. If the memory was allocated using a different method, or the lines array has a different length specification, you may need to modify the print statements accordingly.
-
 
 /*CODE*/
 int main(){
