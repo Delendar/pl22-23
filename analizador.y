@@ -71,17 +71,17 @@ css : css style_modifier | /* vacio */
 style_modifier: 
     | selectors SELECTOR_START declarations SELECTOR_END
     | SELECTOR_START declarations SELECTOR_END 
-        { char error_msg[100];
-          sprintf(error_msg, "Error en línea %d: Falta selector al que aplicar definiciones.", yylineno);
-          yyerror(error_msg); }
+        { /* Error: Falta selector al que aplicar definiciones. */
+        yyerror("Error sintactico: falta selector al que aplicar modificaciones de estilo, linea "); 
+        YYABORT; }
     | selectors SELECTOR_START declarations
-        { char error_msg[100];
-          sprintf(error_msg, "Error en línea %d: se esperaba cierre de definiciones de selector '}'.",yylineno);
-          yyerror(error_msg); }
+        { /* Error: se esperaba cierre de definiciones de selector '}'. */ 
+        yyerror("Error sintactico: se esperaba final de modificaciones de estilo de un selector '}', linea "); 
+        YYABORT; }
     | selectors declarations SELECTOR_END
-        { char error_msg[100];
-        sprintf(error_msg, "Error en línea %d: se esperaba apertura de definiciones de selector '{'.",yylineno);
-        yyerror(error_msg); }
+        { /* Error: se esperaba apertura de definiciones de selector '{'. */ 
+        yyerror("Error sintactico: se esperaba inicio de modificaciones de estilo de un selector '{', linea "); 
+        YYABORT; }
 
 selectors: 
       /* Selector normal. */
@@ -89,9 +89,9 @@ selectors:
       /* Selectores múltiples. */
     | selectors COMMA selector_name
     | error 
-        { char error_msg[100];
-          sprintf(error_msg, "Error en línea %d: selector mal definido. ",yylineno);
-          yyerror(error_msg); }
+        { /* Error: selector mal definido. */ 
+        yyerror("Error sintactico: se encontro un error en la definicion del nombre/nombres de selector, linea "); 
+        YYABORT; }
 
 selector_name: 
     | ELEMENT   { /* Añadir a lista de elementos modificados */ 
@@ -130,7 +130,7 @@ declarations: declarations property
     | /* vacio */
 
 property: PROP_NAME property_value 
-                { /*  */}
+                { /*  */ }
 
 property_value:
     | VALUE_TXT
@@ -328,6 +328,9 @@ void analyze_properties_hash_map(Property_Map_Node** hash_map) {
     }
 }
 
+void yyerror (char const *message) { 
+    fprintf (stderr, "%s {%d}\n", message, yylineno);
+}
 
 /*CODE*/
 int main(){
