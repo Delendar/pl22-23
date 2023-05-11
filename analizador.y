@@ -97,37 +97,31 @@ selectors:
 selector_name: 
     | ELEMENT   { /* Añadir a lista de elementos modificados */ 
         char* aux=$1;
-        removeSpaces(aux);
         add_selector(aux, yylineno);
     }
     | CLASS     { /* Añadir a clases modificadas */         
         char* aux=$1;
-        removeSpaces(aux);
         add_selector(aux, yylineno);
     }
     | SUBCLASS  { /* Añadir a subclases modificadas */ 
         char* aux=$1;
-        removeSpaces(aux);
         add_selector(aux, yylineno);
     }
     | ID        { /* Añadir a id's modificados */ 
         char* aux=$1;
-        removeSpaces(aux);
         add_selector(aux, yylineno);
     }
     | PSEUDOCLASS   { /* Añadir a pseudoclases modificadas */
         char* aux=$1;
-        removeSpaces(aux);
         add_selector(aux, yylineno);
     }
     | PSEUDOELEMENT { /* Añadir a pseudoelementos modificados */
         char* aux=$1;
-        removeSpaces(aux);
         add_selector(aux, yylineno);
     }
     | NESTED_ELEMENT { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/ 
         char* aux=$1;
-        removeSpaces(aux);
+        removeSpacesExceptDot(aux);
         add_selector(aux, yylineno);
     }
 
