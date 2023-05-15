@@ -11,10 +11,14 @@ compile:
 
 test:
 	./$(SOURCE) < $(TEST_FILE)
+
+test-warning:
+	./$(SOURCE) < advertencias.css
+
+test-error:
 	./$(SOURCE) < error1.css
 	./$(SOURCE) < error2.css
 	./$(SOURCE) < error3.css
 	./$(SOURCE) < error4.css
 	./$(SOURCE) < error5.css
 	./$(SOURCE) < error6.css
-	./$(SOURCE) < advertencias.css

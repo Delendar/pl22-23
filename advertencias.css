@@ -12,8 +12,8 @@ elemento {
 }
 
 .clase {
-    background: red;
-    background: red;
+    text-align: center;
+    text-align: right;
 }
 
 elemento, .clase, .clase.subclase, ps:class, ps::elem, .c.s .n {}
