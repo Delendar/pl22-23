@@ -28,11 +28,14 @@ apartados de trabajo a futuro, incidentes y conclusión.
 2.) MANUAL DE USUARIO
 
 Para facilitar la ejecución de nuestro código se ha creado un fichero makefile,
-así como un archivo de ejemplo ("prueba.css") con el que testar el correcto 
-funcionamiento del programa.
+así como un archivo de ejemplo ("prueba.css"), y múltiples ficheros de errores
+("error1.css"), con los que testar el correcto funcionamiento del programa.
 
 Para ser ejecutado, basta con escribir en un terminal las siguientes instrucciones:
 				make
+				make test
+Con estas lineas de código, se ejecutara el programa y se probará con el archivo 
+"prueba.css" por defecto.
 ##################################################################################
 3.) MANUAL TÉCNICO
 
@@ -50,14 +53,10 @@ en nuestro analizador léxico para tener una gramática más sencilla.
 
 Nuestra sección de reglas es de sencilla comprensión ya que la mayoría de las 
 definiciones devuelven al analizador sintáctico un token con su nombre. En algunos
-casos sensibles, como "nested_element_weol" o "prop_name_weol" entre otros, se 
-llama a la función "count_newlines". Esta se explicará en el parrafo siguiente en
-la sección de código.
-
-En esta última sección, resaltar la función "count_newlines" que tal y como su
-nombre indica escanea un string para saber si en el se haya el caracter '\n'. 
-Esta función es útil para poder printear en pantalla la línea en la que se
-comente un error sintáctico, por ejemplo.
+casos sensibles, como "comment", simplemente se suma uno a una varible para llevar
+cuenta del numero de comentarios. En otros casos como "std_name" o "class", se
+guardan el nombre de la clase, subclase, etc para poder acceder a él después en
+las estadísticas.
 
 3.2) ANALIZADOR SINTÁCTICO
 
@@ -65,9 +64,36 @@ En este apartado, nos centramos en el archivo "analizador.y". Cabe destacar que 
 igual que con "analizador.l", creemos que el código esta bien comentado, y las 
 variables y funciones tienen nombres claros para facilitar su comprensión.
 
-En la sección de reglas gramaticales ...
+En primer lugar, definimos varios tipos de estructuras para trabajar con los
+selectores más facilmente, "Selector_Map_Info" y "Selector_Map_Node", así como con
+las propiedades, con estructuras casi homónimas. En "Selector_Map_Info" almacenamos
+el nombre del selector, la frecuencia, las lineas donde aparece y el número de 
+estas. En "Selector_Map_Node" se almacena una estructura de datos como la 
+anteriormente comentada y un puntero al siguiente nodo. "Property_Map_Info" y
+"Property_Map_Node" son iguales, a excepción de la adición de la variable "child_of",
+que controla de que selector es hija la propiedad. De esta forma, se puede saber
+si se pueden sobreescribir los datos del hashmap de las propiedades, ahorrándonos
+tener que borrar todos los datos del hashmap de propiedades antes de seguir al 
+siguiente selector. Posteriormente, se crea un Hash map de cada estructura para
+poder recorrerlas de manera óptima.
 
-Por último, en el apartado de cógido, destacar ...
+En la sección de reglas gramaticales, empezamos con un css y lo vamos descomponiendo
+en los distintos atributos que puede tener. Así pues, cuando se detecta un fallo en 
+la sintaxis, se aborta la ejecución y se printea una explicación detallada que
+facilita encontrar el error dentro del código css. Es interesante mencionar también
+que en la parte de "selector_name" se obtiene el nombre del selector, se eliminan
+los espacios en blanco no necesarios con la función "sanitize_nested_element" y se
+añade este selector al Hash map, aumentando la cuenta de selectores totales y las 
+estadísticas propias dependiendo del caso.
+
+Por último, en el apartado de cógido, destacar las funciones "sanitize_nested_element",
+que se encarga de eliminar los espacios en blanco menos los estrictamente necesarios
+("class espacio .anotherclass"), "create_selector_info" y "add_selector", que se
+encargan del manejo de los selectores en el Hash map. El primero para crear un nuevo
+nodo desde cero y el segundo para hacer las comprobaciones al añadir uno, y si ya
+estaba creado, simplemente actualizar los valores pertinentes. Algo similar ocurre
+con las funciones "create_property_info" y "add_property". Por último encontramos 
+las funciones para liberar memoria y recorrer ambos Hash maps.
 ##################################################################################
 4.) TRABAJO A FUTURO
 
@@ -76,14 +102,16 @@ es que tiene tantos niveles de complejidad como se precise darle. Actualmente,
 el programa sirve como analizador de estadísticas de un archivo CSS, pero dado que
 nuestro código es capaz de reconocer la sintaxis propia de este lenguaje, podría
 tener multiples utilidades, según lo que se quisiera medir. Como ejemplo de esto, 
-con un par de ajustes podríamos ver que el fichero estuviese bien escrito y 
+se ha desarrollado la funcionalidad de ver que el fichero estuviese bien escrito y 
 señalar en que linea no se respeta la sintaxis.
 ##################################################################################
 5.) INCIDENTES
 
 En este apartado cabe destacar las diferentes elecciones técnicas con las que
 hemos tenido que lidiar para correcto desarrollo de esta práctica. Entre ellas 
-destacan por ejemplo la problemática con los espacios en blanco o ...
+destacan por ejemplo la problemática con los espacios en blanco o el manejo
+de los selectores y propiedades, decantándonos finalmente por hacer un Hash map,
+gracias a su rapidez y eficiencia al manejar las estructuras que quisimos implementar.
 ##################################################################################
 6.) CONCLUSIÓN	
 

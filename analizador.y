@@ -259,7 +259,7 @@ Property_Map_Info* create_property_info(char* property, int line, int child_of) 
     return pmi;
 }
 
-/* Gestion de adicion de una propiedad al hashmap.
+/* Gestion de adición de una propiedad al hashmap.
    1. Si no existe colision anade.
    2. Si existe colision, si es igual al almacenado aumenta la frecuencia de aparicion del selector.
    3. Si existe colision, sino es igual crea un nuevo nodo siguiente al que esta analizando. 
