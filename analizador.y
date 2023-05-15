@@ -64,7 +64,7 @@ void print_stats();
 void yyerror (char const *);
 void sanitize_nested_element(char* string);
 void add_selector(char* selector, int line);
-void add_property(char* property, int line, int total_selectors_counter, int child_of);
+void add_property(char* property, int line, int child_of);
 %}
 %locations
 %union{
@@ -167,6 +167,8 @@ declarations: declarations property | /* vacio */
 
 property:
     STANDARD_NAME COLON property_value SEMICOLON
+        { char* aux=$1;
+        add_property(aux, yylineno, (*stats).total_selectors_counter);}
     | COLON property_value SEMICOLON
         { /* Error: se esperaba nombre para la propiedad. */ 
         yyerror("Error sintactico: se esperaba nombre para la propiedad, linea "); 
@@ -283,19 +285,19 @@ Property_Map_Info* create_property_info(char* property, int line, int child_of) 
    3. Si existe colision, sino es igual crea un nuevo nodo siguiente al que esta analizando. 
    Ademas si se da el caso de que hemos avanzado a otro selector, en caso de que haya colisiones se
    sobreescriben los datos almacenados.*/
-void add_property(char* property, int line, int total_selectors_counter, int child_of) {
+void add_property(char* property, int line, int child_of) {
     unsigned int h = hash(property);
     Property_Map_Node* node = properties_hash_map[h];
 
     while (node != NULL) {
         // Si ya existe el mismo property.
-        if (strcmp(node->data->property, property) == 0 && total_selectors_counter==child_of) {
+        if (strcmp(node->data->property, property) == 0 && child_of == node->data->child_of) {
             node->data->frequency++;
             node->data->num_lines++;
             node->data->lines = (int*) realloc(node->data->lines, node->data->num_lines * sizeof(int));
             node->data->lines[node->data->num_lines - 1] = line;
             return;
-        } else {
+        } else if (strcmp(node->data->property, property) == 0) {
             node->data->frequency = 1;
             node->data->num_lines = 1;
             node->data->lines = (int*) realloc(node->data->lines, node->data->num_lines * sizeof(int));
@@ -356,12 +358,12 @@ void analyze_selectors_hash_map(Selector_Map_Node** hash_map) {
                     printf("\n¡Advertencia! Existen selectores sin ninguna propiedad "
                         "en el archivo css.\nDefinidos en las lineas: ");
                 } else {
-                    printf("¡Advertencia! Existen multiples definiciones del mismo selector con nombre %s "
+                    printf("¡Advertencia! Existen multiples definiciones del mismo selector con nombre \"%s\" "
                         "en el archivo css.\nPresentes en las lineas: ", data->selector);
                 }
                 for (int j = 0; j < data->num_lines; j++) {
                     if (j==data->num_lines-1) {
-                        printf("y %d", data->lines[j]);
+                        printf("%d", data->lines[j]);
                     } else {
                         printf("%d, ", data->lines[j]);
                     }
@@ -381,11 +383,11 @@ void analyze_properties_hash_map(Property_Map_Node** hash_map) {
         while (node != NULL) {
             Property_Map_Info* data = node->data;
             if (data->frequency>1) {
-                printf("¡Advertencia! Existen multiples definiciones de la misma propiedad con identificador %s"
+                printf("¡Advertencia! Existen multiples definiciones de la misma propiedad con identificador \"%s\" "
                     "atribuidas al mismo selector.\nPresentes en las lineas: ", data->property);
                 for (int j = 0; j < data->num_lines; j++) {
                     if (j==data->num_lines-1) {
-                        printf("y %d", data->lines[j]);
+                        printf("%d", data->lines[j]);
                     } else {
                         printf("%d, ", data->lines[j]);
                     }
@@ -467,6 +469,7 @@ int main(){
     if (result == 0) {
         print_stats(stats);
         analyze_selectors_hash_map(selectors_hash_map);
+        analyze_properties_hash_map(properties_hash_map);
     }
     return 0;
 }

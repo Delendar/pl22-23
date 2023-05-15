@@ -2,16 +2,7 @@ SOURCE = analizador
 TEST_FILE = prueba.css
 LIB = lfl
 
-all: compile
-
-lex: lex-compile lex-test
-
-lex-compile:
-	flex $(SOURCE).l
-	gcc -o $(SOURCE) lex.yy.c
-
-lex-test:
-	./$(SOURCE) < $(TEST_FILE)
+all: compile test
 
 compile:
 	flex $(SOURCE).l
@@ -20,3 +11,10 @@ compile:
 
 test:
 	./$(SOURCE) < $(TEST_FILE)
+	./$(SOURCE) < error1.css
+	./$(SOURCE) < error2.css
+	./$(SOURCE) < error3.css
+	./$(SOURCE) < error4.css
+	./$(SOURCE) < error5.css
+	./$(SOURCE) < error6.css
+	./$(SOURCE) < advertencias.css

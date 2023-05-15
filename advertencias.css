@@ -1,4 +1,8 @@
 /* Comentario */
+elemetno2 {
+    background: red !important;
+}
+
 elemento {
     background: red;
     text-align: center;
@@ -7,9 +11,9 @@ elemento {
     background: red;
 }
 
-elemento2 {
-    background: red !important;
+.clase {
+    background: red;
+    background: red;
 }
-.clase {}
 
 elemento, .clase, .clase.subclase, ps:class, ps::elem, .c.s .n {}
