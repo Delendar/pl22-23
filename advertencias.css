@@ -4,8 +4,12 @@ elemento {
     text-align: center;
     font-size: 10px;
     margin: 10%;
+    background: red;
 }
 
 elemento2 {
     background: red !important;
 }
+.clase {}
+
+elemento, .clase, .clase.subclase, ps:class, ps::elem, .c.s .n {}

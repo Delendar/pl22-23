@@ -3,8 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define HASH_MAP_SIZE 100
+#define EMPTY_SELECTOR_NAME "1EMPTY"
+#define true 1
+#define false 0
 
 typedef struct Selector_Map_Info {
     char* selector;
@@ -56,6 +60,7 @@ void add_property(char* property, int line, int total_selectors_counter, int chi
     int prop_val_px_counter;
     int prop_val_perc_counter;
     int prop_val_html_counter;
+    int prop_important_counter;
     int empty_selector_counter;
     char* string;
     /* Array de */
@@ -63,15 +68,19 @@ void add_property(char* property, int line, int total_selectors_counter, int chi
 /*TOKENS*/
 %token SELECTOR_START SELECTOR_END COMMA COLON SEMICOLON HASH
 %token <string> STANDARD_NAME STANDARD_NUM CLASS SUBCLASS PSEUDOCLASS PSEUDOELEMENT NESTED_ELEMENT
-%token VALUE_PX VALUE_PERCENTAGE
+%token EMPTY_SELECTOR
+%token VALUE_PX VALUE_PERCENTAGE IMPORTANT
 %type <string> selector_name
 %start css
 %%
 /*RULES*/
 css : css style_modifier | /* vacio */
 
-style_modifier: 
+style_modifier:
     selectors SELECTOR_START declarations SELECTOR_END
+    | selectors EMPTY_SELECTOR
+        { add_selector(EMPTY_SELECTOR_NAME, yylineno); 
+        yyval.empty_selector_counter++;}
     | SELECTOR_START declarations SELECTOR_END 
         { /* Error: Falta selector al que aplicar definiciones. */
         yyerror("Error sintactico: falta selector al que aplicar modificaciones de estilo, linea "); 
@@ -147,8 +156,7 @@ selector_name:
             add_selector(aux, yylineno);
         }
 
-declarations: declarations property
-    | /* vacio */
+declarations: declarations property | /* vacio */ 
 
 property:
     STANDARD_NAME COLON property_value SEMICOLON
@@ -170,14 +178,17 @@ property:
         YYABORT; }
 
 property_value:
-    | STANDARD_NAME
+    | STANDARD_NAME important
         { yyval.prop_val_txt_counter++; }
-    | VALUE_PX
+    | VALUE_PX important
         { yyval.prop_val_px_counter++; }
-    | VALUE_PERCENTAGE
+    | VALUE_PERCENTAGE important
         { yyval.prop_val_perc_counter++; }
-    | HASH STANDARD_NUM
+    | HASH STANDARD_NUM important
         { yyval.prop_val_html_counter++; }
+
+important: IMPORTANT { yyval.prop_important_counter++; }
+    | /* vacio */
 
 %%
 
@@ -259,7 +270,7 @@ Property_Map_Info* create_property_info(char* property, int line, int child_of) 
     return pmi;
 }
 
-/* Gestion de adición de una propiedad al hashmap.
+/* Gestion de adicion de una propiedad al hashmap.
    1. Si no existe colision anade.
    2. Si existe colision, si es igual al almacenado aumenta la frecuencia de aparicion del selector.
    3. Si existe colision, sino es igual crea un nuevo nodo siguiente al que esta analizando. 
@@ -333,17 +344,23 @@ void analyze_selectors_hash_map(Selector_Map_Node** hash_map) {
         Selector_Map_Node* node = hash_map[i];
         while (node != NULL) {
             Selector_Map_Info* data = node->data;
-            printf("Selector: %s\n", data->selector);
-            printf("Frequency: %d\n", data->frequency);
-            printf("Lines: ");
-            for (int j = 0; j < data->num_lines; j++) {
-                printf("%d ", data->lines[j]);
+            if (data->frequency>1) {
+                if (strcmp(data->selector, EMPTY_SELECTOR_NAME) == 0) {
+                    printf("\n¡Advertencia! Existen selectores sin ninguna propiedad "
+                        "en el archivo css.\nDefinidos en las lineas: ");
+                } else {
+                    printf("¡Advertencia! Existen multiples definiciones del mismo selector con nombre %s "
+                        "en el archivo css.\nPresentes en las lineas: ", data->selector);
+                }
+                for (int j = 0; j < data->num_lines; j++) {
+                    if (j==data->num_lines-1) {
+                        printf("y %d", data->lines[j]);
+                    } else {
+                        printf("%d, ", data->lines[j]);
+                    }
+                }
             }
             printf("\n");
-
-            /*
-            Warnings
-            */
 
             node = node->next;
         }
@@ -356,25 +373,56 @@ void analyze_properties_hash_map(Property_Map_Node** hash_map) {
         Property_Map_Node* node = hash_map[i];
         while (node != NULL) {
             Property_Map_Info* data = node->data;
-            printf("Property: %s\n", data->property);
-            printf("Frequency: %d\n", data->frequency);
-            printf("Lines: ");
-            for (int j = 0; j < data->num_lines; j++) {
-                printf("%d ", data->lines[j]);
+            if (data->frequency>1) {
+                printf("¡Advertencia! Existen multiples definiciones de la misma propiedad con identificador %s"
+                    "atribuidas al mismo selector.\nPresentes en las lineas: ", data->property);
+                for (int j = 0; j < data->num_lines; j++) {
+                    if (j==data->num_lines-1) {
+                        printf("y %d", data->lines[j]);
+                    } else {
+                        printf("%d, ", data->lines[j]);
+                    }
+                }
             }
             printf("\n");
-
-            /*
-            Warnings
-            */
 
             node = node->next;
         }
     }
 }
 
-void yyerror (char const *message) { 
+void yyerror(char const *message) { 
     fprintf (stderr, "%s {%d}\n", message, yylineno);
+}
+
+void print_stats() {
+    printf("\n");
+    printf("/---------------------------------\\\n");
+    printf("| Estadisticas sobre selectores:  |\n");
+    printf("\\---------------------------------/\n");
+    printf("-> Selectores totales: %d\n", yylval.total_selectors_counter);
+    printf("-> Elementos: %d\n", yylval.element_counter);
+    printf("-> Clases: %d\n", yylval.class_counter);
+    printf("-> Subclases: %d\n", yylval.subclass_counter);
+    printf("-> Identificadores: %d\n", yylval.id_counter);
+    printf("-> Pseudoelementos: %d\n", yylval.pseudoelement_counter);
+    printf("-> Pseudoclases: %d\n", yylval.pseudoclass_counter);
+    printf("-> Selectores anidados: %d\n", yylval.nested_counter);
+    printf("-> Selectores vacios: %d\n", yylval.empty_selector_counter);
+    printf("\n");
+    printf("/---------------------------------\\\n");
+    printf("| Estadisticas sobre propiedades: |\n");
+    printf("\\---------------------------------/\n");
+    printf("-> Generica: %d\n", yylval.prop_val_txt_counter);
+    printf("-> En pixeles: %d\n", yylval.prop_val_px_counter);
+    printf("-> En porcentaje: %d\n", yylval.prop_val_perc_counter);
+    printf("-> Codigos HTML de color: %d\n", yylval.prop_val_html_counter);
+    printf("-> Marcadas como <!important>: %d\n", yylval.prop_important_counter);
+    printf("\n");
+    printf("/---------------------------------\\\n");
+    printf("| Otras estadisticas:             |\n");
+    printf("\\---------------------------------/\n");
+    printf("-> N. comentarios: %d\n", yylval.prop_important_counter);
 }
 
 /*CODE*/
@@ -389,6 +437,7 @@ int main(){
         yyparse();
         fclose(yyin);
     }
+    print_stats();
     analyze_selectors_hash_map(selectors_hash_map);
     return 0;
 }

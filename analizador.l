@@ -13,6 +13,7 @@ ws [ \t\n]
 colon :
 semicolon ;
 hash #
+empty_selector {lkey}{ws}*{rkey}
 
 /* Simplificadores de expresiones. */
 /* STD_NAME puede ser, tanto elemento como nombre de propiedad. */
@@ -36,6 +37,7 @@ nested_element {nested_element_head}{ws}+{nested_element_tail}
 /* Reconocedores de propiedades. */
 prop_value_perc      {std_num}"%"
 prop_value_px        {std_num}"px"
+important   "!important"
 
 %%
 
@@ -50,15 +52,16 @@ prop_value_px        {std_num}"px"
 {std_name}      { yylval.string = strdup(yytext); return STANDARD_NAME; }
 {std_num}       { return STANDARD_NUM; }
 
+{empty_selector} { return EMPTY_SELECTOR; }
 {class}         { yylval.string = strdup(yytext); return CLASS; }
 {subclass}      { yylval.string = strdup(yytext); return SUBCLASS; }
 {pseudoclass}   { yylval.string = strdup(yytext); return PSEUDOCLASS; }
 {pseudoelement} { yylval.string = strdup(yytext); return PSEUDOELEMENT; }
 {nested_element}   { yylval.string = strdup(yytext); return NESTED_ELEMENT; }
 
-{prop_value_perc}       { return VALUE_PERCENTAGE; }
-
-{prop_value_px}         { return VALUE_PX; }
+{prop_value_perc}   { return VALUE_PERCENTAGE; }
+{prop_value_px}     { return VALUE_PX; }
+{important}         { return IMPORTANT;}
 
 {eol} {  }
 %%
