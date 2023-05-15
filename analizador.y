@@ -10,6 +10,23 @@
 #define true 1
 #define false 0
 
+typedef struct Stats {
+    int total_selectors_counter;
+    int element_counter;
+    int class_counter;
+    int subclass_counter;
+    int id_counter;
+    int pseudoelement_counter;
+    int pseudoclass_counter;
+    int nested_counter;
+    int prop_val_txt_counter;
+    int prop_val_px_counter;
+    int prop_val_perc_counter;
+    int prop_val_html_counter;
+    int prop_important_counter;
+    int empty_selector_counter;
+} Stats;
+
 typedef struct Selector_Map_Info {
     char* selector;
     int frequency;
@@ -37,9 +54,13 @@ typedef struct Property_Map_Node {
 
 Selector_Map_Node* selectors_hash_map[HASH_MAP_SIZE];
 Property_Map_Node* properties_hash_map[HASH_MAP_SIZE];
+Stats* stats;
+extern int comment_counter;
 
 extern int yylex (void);
 extern int yylineno;
+
+void print_stats();
 void yyerror (char const *);
 void sanitize_nested_element(char* string);
 void add_selector(char* selector, int line);
@@ -47,21 +68,7 @@ void add_property(char* property, int line, int total_selectors_counter, int chi
 %}
 %locations
 %union{
-    int total_selectors_counter;
-    int element_counter;
-    int class_counter;
-    int subclass_counter;
-    int id_counter;
-    int pseudoelement_counter;
-    int pseudoclass_counter;
-    int nested_counter;
     int comment_counter;
-    int prop_val_txt_counter;
-    int prop_val_px_counter;
-    int prop_val_perc_counter;
-    int prop_val_html_counter;
-    int prop_important_counter;
-    int empty_selector_counter;
     char* string;
     /* Array de */
 }
@@ -80,7 +87,7 @@ style_modifier:
     selectors SELECTOR_START declarations SELECTOR_END
     | selectors EMPTY_SELECTOR
         { add_selector(EMPTY_SELECTOR_NAME, yylineno); 
-        yyval.empty_selector_counter++;}
+        (*stats).empty_selector_counter++;}
     | SELECTOR_START declarations SELECTOR_END 
         { /* Error: Falta selector al que aplicar definiciones. */
         yyerror("Error sintactico: falta selector al que aplicar modificaciones de estilo, linea "); 
@@ -108,50 +115,50 @@ selector_name:
     STANDARD_NAME   
         { /* Añadir a lista de elementos modificados */
             char* aux=$1;
-            yyval.total_selectors_counter++;
-            yyval.element_counter++;
+            (*stats).total_selectors_counter++;
+            (*stats).element_counter++;
             add_selector(aux, yylineno);
         }
     | CLASS
         { /* Añadir a clases modificadas */         
             char* aux=$1;
-            yyval.total_selectors_counter++;
-            yyval.class_counter++;
+            (*stats).total_selectors_counter++;
+            (*stats).class_counter++;
             add_selector(aux, yylineno);
         }
     | SUBCLASS  
         { /* Añadir a subclases modificadas */ 
             char* aux=$1;
-            yyval.total_selectors_counter++;
-            yyval.subclass_counter++;
+            (*stats).total_selectors_counter++;
+            (*stats).subclass_counter++;
             add_selector(aux, yylineno);
         }
     | HASH STANDARD_NAME        
         { /* Añadir a id's modificados */ 
             char* aux=$2;
-            yyval.total_selectors_counter++;
-            yyval.nested_counter++;
+            (*stats).total_selectors_counter++;
+            (*stats).nested_counter++;
             add_selector(strcat("#",aux), yylineno);
         }
     | PSEUDOCLASS   
         { /* Añadir a pseudoclases modificadas */
             char* aux=$1;
-            yyval.total_selectors_counter++;
-            yyval.pseudoclass_counter++;
+            (*stats).total_selectors_counter++;
+            (*stats).pseudoclass_counter++;
             add_selector(aux, yylineno);
         }
     | PSEUDOELEMENT 
         { /* Añadir a pseudoelementos modificados */
             char* aux=$1;
-            yyval.total_selectors_counter++;
-            yyval.pseudoelement_counter++;
+            (*stats).total_selectors_counter++;
+            (*stats).pseudoelement_counter++;
             add_selector(aux, yylineno);
         }
     | NESTED_ELEMENT 
         { /* Añadir a elementos anidados modificados TENER CAUTELA CON LOS ESPACIOS*/
             char* aux = $1;
-            yyval.total_selectors_counter++;
-            yyval.pseudoelement_counter++;
+            (*stats).total_selectors_counter++;
+            (*stats).pseudoelement_counter++;
             sanitize_nested_element(aux);
             add_selector(aux, yylineno);
         }
@@ -179,15 +186,15 @@ property:
 
 property_value:
     | STANDARD_NAME important
-        { yyval.prop_val_txt_counter++; }
+        { (*stats).prop_val_txt_counter++; }
     | VALUE_PX important
-        { yyval.prop_val_px_counter++; }
+        { (*stats).prop_val_px_counter++; }
     | VALUE_PERCENTAGE important
-        { yyval.prop_val_perc_counter++; }
+        { (*stats).prop_val_perc_counter++; }
     | HASH STANDARD_NUM important
-        { yyval.prop_val_html_counter++; }
+        { (*stats).prop_val_html_counter++; }
 
-important: IMPORTANT { yyval.prop_important_counter++; }
+important: IMPORTANT { (*stats).prop_important_counter++; }
     | /* vacio */
 
 %%
@@ -395,49 +402,71 @@ void yyerror(char const *message) {
     fprintf (stderr, "%s {%d}\n", message, yylineno);
 }
 
-void print_stats() {
+void print_stats(Stats* stats) {
     printf("\n");
     printf("/---------------------------------\\\n");
     printf("| Estadisticas sobre selectores:  |\n");
     printf("\\---------------------------------/\n");
-    printf("-> Selectores totales: %d\n", yylval.total_selectors_counter);
-    printf("-> Elementos: %d\n", yylval.element_counter);
-    printf("-> Clases: %d\n", yylval.class_counter);
-    printf("-> Subclases: %d\n", yylval.subclass_counter);
-    printf("-> Identificadores: %d\n", yylval.id_counter);
-    printf("-> Pseudoelementos: %d\n", yylval.pseudoelement_counter);
-    printf("-> Pseudoclases: %d\n", yylval.pseudoclass_counter);
-    printf("-> Selectores anidados: %d\n", yylval.nested_counter);
-    printf("-> Selectores vacios: %d\n", yylval.empty_selector_counter);
+    printf("-> Selectores totales: %d\n", (*stats).total_selectors_counter);
+    printf("-> Elementos: %d\n", (*stats).element_counter);
+    printf("-> Clases: %d\n", (*stats).class_counter);
+    printf("-> Subclases: %d\n", (*stats).subclass_counter);
+    printf("-> Identificadores: %d\n", (*stats).id_counter);
+    printf("-> Pseudoelementos: %d\n", (*stats).pseudoelement_counter);
+    printf("-> Pseudoclases: %d\n", (*stats).pseudoclass_counter);
+    printf("-> Selectores anidados: %d\n", (*stats).nested_counter);
+    printf("-> Selectores vacios: %d\n", (*stats).empty_selector_counter);
     printf("\n");
     printf("/---------------------------------\\\n");
     printf("| Estadisticas sobre propiedades: |\n");
     printf("\\---------------------------------/\n");
-    printf("-> Generica: %d\n", yylval.prop_val_txt_counter);
-    printf("-> En pixeles: %d\n", yylval.prop_val_px_counter);
-    printf("-> En porcentaje: %d\n", yylval.prop_val_perc_counter);
-    printf("-> Codigos HTML de color: %d\n", yylval.prop_val_html_counter);
-    printf("-> Marcadas como <!important>: %d\n", yylval.prop_important_counter);
+    printf("-> Generica: %d\n", (*stats).prop_val_txt_counter);
+    printf("-> En pixeles: %d\n", (*stats).prop_val_px_counter);
+    printf("-> En porcentaje: %d\n", (*stats).prop_val_perc_counter);
+    printf("-> Codigos HTML de color: %d\n", (*stats).prop_val_html_counter);
+    printf("-> Marcadas como <!important>: %d\n", (*stats).prop_important_counter);
     printf("\n");
     printf("/---------------------------------\\\n");
     printf("| Otras estadisticas:             |\n");
     printf("\\---------------------------------/\n");
-    printf("-> N. comentarios: %d\n", yylval.prop_important_counter);
+    printf("-> N. comentarios: %d\n", comment_counter);
+}
+
+void initialize_stats(Stats* stats) {
+    stats->total_selectors_counter = 0;
+    stats->element_counter = 0;
+    stats->class_counter = 0;
+    stats->subclass_counter = 0;
+    stats->id_counter = 0;
+    stats->pseudoelement_counter = 0;
+    stats->pseudoclass_counter = 0;
+    stats->nested_counter = 0;
+    stats->prop_val_txt_counter = 0;
+    stats->prop_val_px_counter = 0;
+    stats->prop_val_perc_counter = 0;
+    stats->prop_val_html_counter = 0;
+    stats->prop_important_counter = 0;
+    stats->empty_selector_counter = 0;
 }
 
 /*CODE*/
 int main(){
     extern FILE *yyin;
     yyin=stdin;
+    int result = 0;
+    stats = (struct Stats*)malloc(sizeof(struct Stats));
     if(yyin == NULL){
         perror("fopen");
         exit(EXIT_FAILURE);
     }
     else {
-        yyparse();
+        initialize_stats(stats);
+        result = yyparse();
         fclose(yyin);
     }
-    print_stats();
-    analyze_selectors_hash_map(selectors_hash_map);
+    if (result == 0) {
+        print_stats(stats);
+        analyze_selectors_hash_map(selectors_hash_map);
+    }
     return 0;
 }

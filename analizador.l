@@ -2,6 +2,8 @@
 %{
 #include <stdio.h>
 #include "analizador.tab.h"
+
+int comment_counter = 0;
 %}
 %option yylineno
 
@@ -47,7 +49,7 @@ important   "!important"
 {colon}     { return COLON; }
 {semicolon} { return SEMICOLON; }
 {hash}      { return HASH; }
-{comment}   { yylval.comment_counter++; }
+{comment}   { comment_counter = comment_counter + 1; }
 
 {std_name}      { yylval.string = strdup(yytext); return STANDARD_NAME; }
 {std_num}       { return STANDARD_NUM; }
