@@ -29,13 +29,21 @@ apartados de trabajo a futuro, incidentes y conclusión.
 
 Para facilitar la ejecución de nuestro código se ha creado un fichero makefile,
 así como un archivo de ejemplo ("prueba.css"), y múltiples ficheros de errores
-("error1.css"), con los que testar el correcto funcionamiento del programa.
+("errorN.css"), con los que testar el correcto funcionamiento del programa, asi
+como un archivo ("advertencias.css") para mostrar las advertencias de cosas que
+no son deseadas en un archivo css pero que no son errores.
 
-Para ser ejecutado, basta con escribir en un terminal las siguientes instrucciones:
-				make
-				make test
-Con estas lineas de código, se ejecutara el programa y se probará con el archivo 
-"prueba.css" por defecto.
+El archivo makefile define las siguientes metas:
+ - make | make all
+	ejecuta tanto la compilacion como la ejecucion del archivo de ejemplo
+ - make test-error
+	ejecuta el analisis de los archivos de error
+ - make test-warning
+	ejecuta el analisis del archivo de advertencias
+
+De similar forma para ejecutar otros archivos, se debe de utilizar el ejecutable:
+ - ./analizador < archivo_de_ejemplo.css
+ 
 ##################################################################################
 3.) MANUAL TÉCNICO
 
